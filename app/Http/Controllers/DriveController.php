@@ -2,9 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Capacity;
-use App\Models\Computer;
 use App\Models\Drive;
+use App\Models\Computer;
 use App\Models\DriveType;
 use App\Models\BrandModel;
 use Illuminate\Http\Request;
@@ -13,63 +12,97 @@ use Illuminate\View\View;
 
 class DriveController extends Controller
 {
-    //
     public function create(Computer $computer): View
     {
-        [$driveTypes, $brandModels, $capacities] = $this->formData();
- 
-        return view('drives.create', compact('computer', 'driveTypes', 'brandModels', 'capacities'));
+        $driveTypes = DriveType::orderBy('name')->get();
+        
+        // Solo enviamos los modelos de almacenamiento
+        $brandModels = BrandModel::with('brand')
+            ->where('type', 'drive') 
+            ->orderBy('name')
+            ->get();
+
+        return view('drives.create', compact('computer', 'driveTypes', 'brandModels'));
     }
- 
+
     public function store(Request $request, Computer $computer): RedirectResponse
     {
         $validated = $request->validate([
-            'drive_type_id' => ['required', 'exists:drive_types,id'],
-            'brand_model_id' => ['required', 'exists:brand_models,id'],
-            'capacity_id' => ['required', 'exists:capacities,id'],
+            'drive_type_id'  => 'required|exists:drive_types,id',
+            'brand_model_id' => 'required|exists:brand_models,id',
+            'cap_number'     => 'required|integer|min:1',
+            'cap_unit'       => 'required|in:MB,GB,TB',
         ]);
- 
-        $validated['computer_id'] = $computer->id;
- 
-        Drive::create($validated);
- 
-        return redirect()->route('computers.show', $computer)->with('success', 'Disco agregado correctamente.');
-    }
- 
-    public function edit(Computer $computer, Drive $drive): View
-    {
-        [$driveTypes, $brandModels, $capacities] = $this->formData();
- 
-        return view('drives.edit', compact('computer', 'drive', 'driveTypes', 'brandModels', 'capacities'));
-    }
- 
-    public function update(Request $request, Computer $computer, Drive $drive): RedirectResponse
-    {
-        $validated = $request->validate([
-            'drive_type_id' => ['required', 'exists:drive_types,id'],
-            'brand_model_id' => ['required', 'exists:brand_models,id'],
-            'capacity_id' => ['required', 'exists:capacities,id'],
+
+        $computer->drives()->create([
+            'drive_type_id'  => $validated['drive_type_id'],
+            'brand_model_id' => $validated['brand_model_id'],
+            'capacity_value' => $validated['cap_number'],
+            'capacity_unit'  => $validated['cap_unit'],
+            'capacity_in_mb' => $this->calculateMb($validated['cap_number'], $validated['cap_unit']),
         ]);
- 
-        $drive->update($validated);
- 
-        return redirect()->route('computers.show', $computer)->with('success', 'Disco actualizado correctamente.');
-    }
- 
-    public function destroy(Computer $computer, Drive $drive): RedirectResponse
-    {
-        $drive->delete();
- 
-        return redirect()->route('computers.show', $computer)->with('success', 'Disco eliminado correctamente.');
-    }
- 
-    private function formData(): array
-    {
-        return [
-            DriveType::orderBy('name')->get(),
-            BrandModel::with('brand')->orderBy('name')->get(),
-            Capacity::orderBy('name')->get(),
-        ];
+
+        return redirect()->route('computers.show', $computer)
+                         ->with('success', 'Disco agregado con éxito.');
     }
 
+    public function edit(Drive $drive): View
+    {
+        $driveTypes = DriveType::orderBy('name')->get();
+        
+        $brandModels = BrandModel::with('brand')
+            ->where('type', 'drive') 
+            ->orderBy('name')
+            ->get();
+
+        // Extraemos la computadora y las capacidades numéricas directamente desde el registro del disco
+        $computer      = $drive->computer;
+        $currentNumber = $drive->capacity_value;
+        $currentUnit   = $drive->capacity_unit;
+
+        return view('drives.edit', compact(
+            'computer', 'drive', 'driveTypes', 'brandModels', 'currentNumber', 'currentUnit'
+        ));
+    }
+
+    public function update(Request $request, Drive $drive): RedirectResponse
+    {
+        $validated = $request->validate([
+            'drive_type_id'  => 'required|exists:drive_types,id',
+            'brand_model_id' => 'required|exists:brand_models,id',
+            'cap_number'     => 'required|integer|min:1',
+            'cap_unit'       => 'required|in:MB,GB,TB',
+        ]);
+
+        $drive->update([
+            'drive_type_id'  => $validated['drive_type_id'],
+            'brand_model_id' => $validated['brand_model_id'],
+            'capacity_value' => $validated['cap_number'],
+            'capacity_unit'  => $validated['cap_unit'],
+            'capacity_in_mb' => $this->calculateMb($validated['cap_number'], $validated['cap_unit']),
+        ]);
+
+        return redirect()->route('computers.show', $drive->computer_id)
+                         ->with('success', 'Disco actualizado con éxito.');
+    }
+
+    public function destroy(Drive $drive): RedirectResponse
+    {
+        $computerId = $drive->computer_id;
+        $drive->delete();
+
+        return redirect()->route('computers.show', $computerId)
+                         ->with('success', 'Disco removido con éxito.');
+    }
+
+    // ─── Helpers ──────────────────────────────────────────────────────────────
+
+    private function calculateMb(int $value, string $unit): int
+    {
+        return match ($unit) {
+            'TB'    => $value * 1024 * 1024,
+            'GB'    => $value * 1024,
+            default => $value, // MB
+        };
+    }
 }

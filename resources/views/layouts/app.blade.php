@@ -47,9 +47,7 @@
                     <x-nav-link :route="'drive-types.index'" :active="request()->routeIs('drive-types.*')">
                         Tipos de disco
                     </x-nav-link>
-                    <x-nav-link :route="'capacities.index'" :active="request()->routeIs('capacities.*')">
-                        Capacidades
-                    </x-nav-link>
+                 
                     <x-nav-link :route="'operating-systems.index'" :active="request()->routeIs('operating-systems.*')">
                         Sistemas operativos
                     </x-nav-link>
@@ -58,30 +56,36 @@
         </aside>
 
         {{-- Main content --}}
-        <div class="flex-1 flex flex-col min-w-0">
-            <header class="bg-white border-b border-slate-200 px-8 py-4">
+        <div class="flex-1 flex flex-col min-w-0 overflow-x-hidden">
+            <header class="bg-white border-b border-slate-200 px-8 py-4 shrink-0">
                 <h1 class="text-lg font-semibold text-slate-900">@yield('header', 'Inventario')</h1>
             </header>
 
-            <main class="flex-1 px-8 py-6">
-                @if (session('success'))
-                    <div class="mb-6 rounded-md bg-emerald-50 border border-emerald-200 px-4 py-3 text-sm text-emerald-800">
-                        {{ session('success') }}
-                    </div>
-                @endif
+            {{-- CORRECCIÓN AQUÍ: Quitamos 'flex-1' para evitar el colapso horizontal del ancho de los formularios --}}
+            <main class="px-8 py-6">
+                
+                {{-- Envoltura de ancho completo para obligar a los formularios a expandirse correctamente --}}
+                <div class="w-full">
+                    @if (session('success'))
+                        <div class="mb-6 rounded-md bg-emerald-50 border border-emerald-200 px-4 py-3 text-sm text-emerald-800 animate-fade-in">
+                            {{ session('success') }}
+                        </div>
+                    @endif
 
-                @if ($errors->any())
-                    <div class="mb-6 rounded-md bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-800">
-                        <p class="font-medium mb-1">Revisa los siguientes errores:</p>
-                        <ul class="list-disc list-inside space-y-0.5">
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                @endif
+                    @if ($errors->any())
+                        <div class="mb-6 rounded-md bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-800">
+                            <p class="font-medium mb-1">Revisa los siguientes errores:</p>
+                            <ul class="list-disc list-inside space-y-0.5">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
 
-                @yield('content')
+                    @yield('content')
+                </div>
+
             </main>
         </div>
     </div>

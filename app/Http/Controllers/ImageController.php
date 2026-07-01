@@ -10,33 +10,28 @@ use Illuminate\Support\Facades\Storage;
 
 class ImageController extends Controller
 {
-    //
     public function store(Request $request, Computer $computer): RedirectResponse
     {
         $request->validate([
-            'images' => ['required', 'array'],
+            'images'   => ['required', 'array'],
             'images.*' => ['image', 'max:4096'],
         ]);
- 
+
         foreach ($request->file('images', []) as $file) {
             $path = $file->store('computers/' . $computer->id, 'public');
- 
-            Image::create([
-                'path' => $path,
-                'computer_id' => $computer->id,
-            ]);
+            Image::create(['path' => $path, 'computer_id' => $computer->id]);
         }
- 
-        return redirect()->route('computers.show', $computer)->with('success', 'Imágenes agregadas correctamente.');
-    }
- 
-    public function destroy(Computer $computer, Image $image): RedirectResponse
-    {
-        Storage::disk('public')->delete($image->path);
- 
-        $image->delete();
- 
-        return redirect()->route('computers.show', $computer)->with('success', 'Imagen eliminada correctamente.');
+
+        return redirect()->back()->with('success', 'Imágenes agregadas correctamente.');
     }
 
+    public function destroy(Request $request, Computer $computer, Image $image): RedirectResponse
+    {
+        Storage::disk('public')->delete($image->path);
+        $image->delete();
+
+        $redirect = $request->input('_redirect', route('computers.show', $computer));
+
+        return redirect($redirect)->with('success', 'Imagen eliminada correctamente.');
+    }
 }

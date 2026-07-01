@@ -26,21 +26,17 @@ class BrandModelController extends Controller
         return view('brand-models.create', compact('brands'));
     }
  
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request)
     {
         $validated = $request->validate([
-            'brand_id' => ['required', 'exists:brands,id'],
-            'name' => [
-                'required',
-                'string',
-                'max:255',
-                Rule::unique('brand_models')->where(fn ($query) => $query->where('brand_id', $request->brand_id)),
-            ],
+            'brand_id' => 'required|exists:brands,id',
+            'name'     => 'required|string|max:255',
+            'type'     => 'required|in:computer,drive', // Agrega esta regla
         ]);
- 
+
         BrandModel::create($validated);
- 
-        return redirect()->route('brand-models.index')->with('success', 'Modelo creado correctamente.');
+
+        return redirect()->route('brand-models.index')->with('success', 'Modelo creado con éxito.');
     }
  
     public function show(BrandModel $brandModel): View

@@ -12,6 +12,7 @@ class BrandModel extends Model
     protected $fillable = [
         'brand_id',
         'name',
+        'type',
     ];
  
     public function brand(): BelongsTo
