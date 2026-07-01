@@ -31,7 +31,7 @@ class BrandModelController extends Controller
         $validated = $request->validate([
             'brand_id' => 'required|exists:brands,id',
             'name'     => 'required|string|max:255',
-            'type'     => 'required|in:computer,drive', // Agrega esta regla
+            'type'     => 'required|in:computer,drive',
         ]);
 
         BrandModel::create($validated);

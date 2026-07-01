@@ -22,10 +22,8 @@ class ComputerController extends Controller
   
 public function index(Request $request): View
 {
-    // Iniciamos la consulta base con sus relaciones cargadas
     $query = Computer::with(['brandModel.brand', 'department', 'employee', 'operatingSystem']);
 
-    // 1. Filtro por Texto: Serial o Nombre del Empleado
     if ($request->filled('search')) {
         $search = $request->input('search');
         $query->where(function ($q) use ($search) {
@@ -37,24 +35,20 @@ public function index(Request $request): View
         });
     }
 
-    // 2. Filtro por Marca
     if ($request->filled('brand_id')) {
         $query->whereHas('brandModel', function ($q) use ($request) {
             $q->where('brand_id', $request->input('brand_id'));
         });
     }
 
-    // 3. Filtro por Departamento
     if ($request->filled('department_id')) {
         $query->where('department_id', $request->input('department_id'));
     }
 
-    // 4. Filtro por Sistema Operativo
     if ($request->filled('operating_system_id')) {
         $query->where('operating_system_id', $request->input('operating_system_id'));
     }
 
-    // 5. Filtro por Disponibilidad (Asignado o en Stock)
     if ($request->filled('status')) {
         if ($request->input('status') === 'assigned') {
             $query->whereNotNull('employee_id');
@@ -63,12 +57,10 @@ public function index(Request $request): View
         }
     }
 
-    // Ordenamos y paginamos manteniendo los filtros en los links de paginación
     $computers = $query->orderBy('serial')
                        ->paginate(15)
                        ->withQueryString();
 
-    // Necesitamos cargar los catálogos para llenar los selectores del formulario
     $brands = Brand::orderBy('name')->get();
     $departments = Department::orderBy('name')->get();
     $operatingSystems = OperatingSystem::orderBy('name')->get();
@@ -78,7 +70,6 @@ public function index(Request $request): View
 
     public function create(): View
     {
-        // Cargamos los datos compartidos pasándole los modelos correspondientes
         [$brandModels, $departments, $employees, $operatingSystems, $driveTypes, $driveModels] = $this->formData();
 
         return view('computers.create', compact(
@@ -97,7 +88,6 @@ public function index(Request $request): View
             'department_id'       => 'nullable|exists:departments,id',
             'employee_id'         => 'nullable|exists:employees,id',
             
-            // Validamos la estructura del array dinámico que viene de la vista
             'drives'                  => 'nullable|array',
             'drives.*.drive_type_id'  => 'required|exists:drive_types,id',
             'drives.*.brand_model_id' => 'required|exists:brand_models,id',
@@ -160,7 +150,6 @@ public function index(Request $request): View
         DB::transaction(function () use ($request, $validated, $computer) {
             $computer->update($validated);
 
-            // Sincronización básica de nuevos discos si se envían desde un formulario en lote
             if ($request->has('drives')) {
                 foreach ($request->input('drives', []) as $driveData) {
                     Drive::create([
@@ -174,7 +163,6 @@ public function index(Request $request): View
                 }
             }
 
-            // Nuevas imágenes
             foreach ($request->file('images', []) as $file) {
                 $path = $file->store('computers/' . $computer->id, 'public');
                 Image::create(['path' => $path, 'computer_id' => $computer->id]);
@@ -194,8 +182,6 @@ public function index(Request $request): View
 
         return redirect()->route('computers.index')->with('success', 'Equipo eliminado correctamente.');
     }
-
-    // ─── Helpers ──────────────────────────────────────────────────────────────
 
     private function validateComputer(Request $request, ?int $computerId = null): array
     {

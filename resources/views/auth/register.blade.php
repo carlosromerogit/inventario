@@ -24,7 +24,6 @@
             <form action="{{ route('register') }}" method="POST" class="space-y-5">
                 @csrf
 
-                {{-- Nombre Completo --}}
                 <div>
                     <label for="name" class="block text-sm font-medium text-slate-700">
                         Nombre completo
@@ -39,7 +38,6 @@
                     @enderror
                 </div>
 
-                {{-- Correo Electrónico --}}
                 <div>
                     <label for="email" class="block text-sm font-medium text-slate-700">
                         Correo electrónico
@@ -54,7 +52,6 @@
                     @enderror
                 </div>
 
-                {{-- Contraseña --}}
                 <div>
                     <label for="password" class="block text-sm font-medium text-slate-700">
                         Contraseña
@@ -68,7 +65,6 @@
                     @enderror
                 </div>
 
-                {{-- Confirmar Contraseña --}}
                 <div>
                     <label for="password_confirmation" class="block text-sm font-medium text-slate-700">
                         Confirmar contraseña
@@ -79,7 +75,6 @@
                     </div>
                 </div>
 
-                {{-- Botón de registro --}}
                 <div>
                     <button type="submit" 
                             class="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 transition">
@@ -88,7 +83,6 @@
                 </div>
             </form>
 
-            {{-- Enlace de retorno al Login --}}
             <div class="mt-6 border-t border-slate-100 pt-4 text-center">
                 <p class="text-sm text-slate-600">
                     ¿Ya tienes una cuenta? 

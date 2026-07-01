@@ -5,7 +5,6 @@
 
 @section('content')
 <div class="space-y-6">
-    {{-- Botones de navegación superior --}}
     <div class="flex items-center justify-between">
         <a href="{{ route('computers.index') }}" class="text-sm font-medium text-slate-600 hover:text-slate-900 transition">
             &larr; Volver al listado
@@ -18,7 +17,6 @@
     </div>
 
     <div class="grid grid-cols-3 gap-6">
-        {{-- Bloque Izquierdo: Especificaciones Técnicas --}}
         <div class="col-span-2 space-y-6">
             <div class="bg-white border border-slate-200 rounded-lg shadow-sm p-6">
                 <h3 class="text-sm font-semibold text-slate-700 mb-4">Especificaciones del Sistema</h3>
@@ -50,7 +48,6 @@
                 </dl>
             </div>
 
-            {{-- TABLA DE DISCOS INSTALADOS (SOLO LECTURA) --}}
             <div class="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
                 <div class="p-6 border-b border-slate-100">
                     <h3 class="text-sm font-semibold text-slate-700">Unidades de Almacenamiento Instaladas</h3>
@@ -80,7 +77,6 @@
             </div>
         </div>
 
-        {{-- Bloque Derecho: Responsable e Imágenes --}}
         <div class="col-span-1 space-y-6">
             <div class="bg-white border border-slate-200 rounded-lg shadow-sm p-6">
                 <h3 class="text-sm font-semibold text-slate-700 mb-3">Custodio</h3>
@@ -94,8 +90,11 @@
                 @else
                     <div class="grid grid-cols-2 gap-2">
                         @foreach($computer->images as $img)
-                            <div class="aspect-square rounded-md overflow-hidden bg-slate-100 border border-slate-200">
-                                <img src="{{ asset('storage/' . $img->path) }}" class="w-full h-full object-cover">
+                            {{-- Modificado: Añadida la clase 'gallery-item' y el atributo 'data-src' --}}
+                            <div class="aspect-square rounded-md overflow-hidden bg-slate-100 border border-slate-200 group cursor-pointer gallery-item"
+                                 data-src="{{ asset('storage/' . $img->path) }}">
+                                <img src="{{ asset('storage/' . $img->path) }}" 
+                                     class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
                             </div>
                         @endforeach
                     </div>
@@ -103,5 +102,68 @@
             </div>
         </div>
     </div>
+
+    {{-- MODAL INTERACTIVO (Oculto por defecto con la clase 'hidden') --}}
+    <div id="galleryModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm transition-opacity duration-300 opacity-0">
+        {{-- Botón para cerrar (X) --}}
+        <button id="closeModal" class="absolute top-4 right-4 text-white hover:text-slate-300 p-2 focus:outline-none">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+        </button>
+
+        {{-- Contenedor de la Imagen Expandida --}}
+        <div class="max-w-4xl max-h-[85vh] overflow-hidden rounded-lg shadow-2xl transition-transform duration-300 scale-95">
+            <img id="modalImage" src="" class="w-full h-full object-contain max-h-[85vh]">
+        </div>
+    </div>
 </div>
+
+{{-- SCRIPT JAVASCRIPT PURO --}}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const modal = document.getElementById('galleryModal');
+        const modalImg = document.getElementById('modalImage');
+        const closeBtn = document.getElementById('closeModal');
+        const items = document.querySelectorAll('.gallery-item');
+
+        // Escuchar clics en las miniaturas de la galería
+        items.forEach(item => {
+            item.addEventListener('click', () => {
+                const imgSrc = item.getAttribute('data-src');
+                modalImg.src = imgSrc;
+                
+                // Mostrar el modal y disparar transiciones de Tailwind
+                modal.classList.remove('hidden');
+                setTimeout(() => {
+                    modal.classList.remove('opacity-0');
+                    modal.querySelector('div').classList.remove('scale-95');
+                }, 20);
+            });
+        });
+
+        // Función reutilizable para cerrar el modal suavemente
+        const closeModal = () => {
+            modal.classList.add('opacity-0');
+            modal.querySelector('div').classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modalImg.src = ''; // Limpia la imagen para la próxima apertura
+            }, 300); // Espera que termine la animación (duration-300)
+        };
+
+        // Cerrar al hacer clic en la 'X'
+        closeBtn.addEventListener('click', closeModal);
+
+        // Cerrar al hacer clic en el fondo oscuro
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeModal();
+        });
+
+        // Cerrar al presionar la tecla Escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && !modal.classList.contains('hidden')) closeModal();
+        });
+    });
+</script>
 @endsection

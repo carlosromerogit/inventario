@@ -12,7 +12,6 @@
 
             <div class="space-y-5">
 
-                {{-- Tipo de Disco --}}
                 <x-select 
                     name="drive_type_id" 
                     label="Tipo de disco" 
@@ -21,7 +20,6 @@
                     required 
                     placeholder="Seleccione un tipo..." />
 
-                {{-- Marca / Modelo --}}
                 <x-select 
                     name="brand_model_id" 
                     label="Marca / Modelo" 
@@ -30,7 +28,6 @@
                     required 
                     placeholder="Seleccione un modelo..." />
 
-                {{-- Capacidad Combinada (Número + Unidad de medida) --}}
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1">
                         Capacidad <span class="text-red-500">*</span>
@@ -38,7 +35,6 @@
                     
                     <div class="grid grid-cols-3 gap-3">
                         <div class="col-span-2">
-                            {{-- Input para el valor numérico --}}
                             <x-input 
                                 type="number" 
                                 name="cap_number" 
@@ -49,7 +45,6 @@
                         </div>
                         
                         <div>
-                            {{-- Selector de la unidad --}}
                             <select name="cap_unit" 
                                     class="block w-full rounded-md shadow-sm text-sm px-3 py-2 border border-slate-300 text-slate-900 focus:border-indigo-500 focus:ring-indigo-500">
                                 <option value="GB" @selected(old('cap_unit') == 'GB')>GB</option>
@@ -60,7 +55,6 @@
                     </div>
                 </div>
 
-                {{-- Botones de acción --}}
                 <div class="flex justify-end gap-3 pt-2">
                     <a href="{{ route('computers.show', $computer) }}"
                        class="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition">

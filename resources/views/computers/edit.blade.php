@@ -10,7 +10,6 @@
 
     <div class="space-y-6">
 
-        {{-- SECCIÓN 1 — Datos del equipo --}}
         <div class="bg-white rounded-lg border border-slate-200 p-6">
             <h2 class="text-sm font-semibold text-slate-700 mb-5">Datos del equipo</h2>
             <div class="grid grid-cols-2 gap-5">
@@ -34,7 +33,6 @@
             </div>
         </div>
 
-        {{-- SECCIÓN 2 — Gestión de Discos --}}
         <div class="bg-white rounded-lg border border-slate-200 p-6">
             <div class="flex items-center justify-between mb-5">
                 <h2 class="text-sm font-semibold text-slate-700">Discos duros instalados</h2>
@@ -44,7 +42,6 @@
                 </button>
             </div>
 
-            {{-- MODIFICADO: Ahora los botones de acción para los discos existentes viven AQUÍ --}}
             @if($computer->drives->isNotEmpty())
                 <div class="mb-5 space-y-2">
                     <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Discos actuales:</h3>
@@ -58,7 +55,6 @@
                                 <div class="flex items-center gap-3 text-sm font-medium">
                                     <a href="{{ route('drives.edit', $drive) }}" class="text-indigo-600 hover:text-indigo-900">Editar pieza</a>
                                     
-                                    {{-- Botón para quitar el disco inmediatamente --}}
                                     <button type="button" 
                                             onclick="if(confirm('¿Eliminar este disco del inventario de este equipo?')) { document.getElementById('delete-drive-{{ $drive->id }}').submit(); }"
                                             class="text-red-600 hover:text-red-900">
@@ -71,14 +67,12 @@
                 </div>
             @endif
 
-            {{-- Contenedor dinámico para agregar NUEVOS discos en lote --}}
             <div id="drives-container" class="space-y-3"></div>
             <p id="drives-empty" class="text-sm text-slate-400 text-center py-4">
                 No hay nuevos discos agregados para este equipo en esta sesión.
             </p>
         </div>
 
-        {{-- SECCIÓN 3 — Imágenes --}}
         <div class="bg-white rounded-lg border border-slate-200 p-6">
             <h2 class="text-sm font-semibold text-slate-700 mb-4">Imágenes del equipo</h2>
             
@@ -112,7 +106,6 @@
     </div>
 </form>
 
-{{-- Formularios ocultos de eliminación rápida para los discos individuales --}}
 @foreach($computer->drives as $drive)
     <form id="delete-drive-{{ $drive->id }}" action="{{ route('drives.destroy', $drive) }}" method="POST" class="hidden">
         @csrf
@@ -121,7 +114,6 @@
 @endforeach
 
 <script>
-// ─── Discos Dinámicos ────────────────────────────────────────────────────────
 var driveIndex = 0;
 var driveTypes  = @json($driveTypes->map(fn($d) => ['id' => $d->id, 'name' => $d->name]));
 var driveModels = @json($driveModels->map(fn($m) => ['id' => $m->id, 'name' => $m->brand->name . ' — ' . $m->name]));
@@ -208,7 +200,6 @@ function removeDrive(i) {
     }
 }
 
-// ─── Imágenes ────────────────────────────────────────────────────────────────
 var selectedFiles = [];
 
 function handleImageSelect(input) {
@@ -261,7 +252,6 @@ function removePreview(index) {
     }
 }
 
-// Sincronizar inputs de imágenes
 function syncFiles() {
     var dt = new DataTransfer();
     selectedFiles.forEach(function(file) {

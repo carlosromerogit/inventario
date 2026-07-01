@@ -11,7 +11,6 @@
             @csrf
 
             <div class="space-y-5">
-                {{-- Selector de Marca existente --}}
                 <x-select 
                     name="brand_id" 
                     label="Marca" 
@@ -20,7 +19,6 @@
                     required 
                     placeholder="Seleccione una marca..." />
 
-                {{-- Nombre del Modelo --}}
                 <x-input 
                     name="name" 
                     label="Nombre del modelo" 
@@ -28,7 +26,6 @@
                     placeholder="Ej. OptiPlex 7080 o A400 SSD" 
                     required />
 
-                {{-- NUEVO: Selector de Tipo de Componente --}}
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1">
                         Tipo de componente <span class="text-red-500">*</span>
@@ -45,7 +42,6 @@
                     @enderror
                 </div>
 
-                {{-- Botones de acción --}}
                 <div class="flex justify-end gap-3 pt-2 border-t border-slate-100">
                     <a href="{{ route('brand-models.index') }}"
                        class="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition">

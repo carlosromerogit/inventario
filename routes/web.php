@@ -3,7 +3,6 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BrandController;
 use App\Http\Controllers\BrandModelController;
-use App\Http\Controllers\CapacityController;
 use App\Http\Controllers\ComputerController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DepartmentController;
@@ -14,27 +13,21 @@ use App\Http\Controllers\ImageController;
 use App\Http\Controllers\OperatingSystemController;
 use Illuminate\Support\Facades\Route;
 
-// Redirección de la raíz al Dashboard (El middleware auth se encargará de mandarlo a loguear si no ha entrado)
 Route::get('/', function () {
     return redirect()->route('dashboard');
 });
 
-// ─── Rutas Públicas (Solo visitas sin sesión activa) ─────────────────────
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
     Route::post('/login', [AuthController::class, 'login']);
 });
 
-// Salida de sesión
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-// ─── RUTAS PROTEGIDAS (Solo usuarios autenticados) ───────────────────────────
 Route::middleware('auth')->group(function () {
 
-    // Panel Principal
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    // Catálogos y Recursos Estándar (Reemplazan las rutas manuales repetitivas de 7 líneas)
     Route::resource('departments', DepartmentController::class);
     Route::resource('operating-systems', OperatingSystemController::class);
     Route::resource('brands', BrandController::class);
@@ -43,14 +36,12 @@ Route::middleware('auth')->group(function () {
     Route::resource('employees', EmployeeController::class);
     Route::resource('computers', ComputerController::class);
 
-    // ─── Drives (Gestión interna bajo equipos) ───────────────────────────────
     Route::get('/computers/{computer}/drives/create', [DriveController::class, 'create'])->name('computers.drives.create');
     Route::post('/computers/{computer}/drives',        [DriveController::class, 'store'])->name('computers.drives.store');
     Route::get('/drives/{drive}/edit',                 [DriveController::class, 'edit'])->name('drives.edit');
     Route::put('/drives/{drive}',                      [DriveController::class, 'update'])->name('drives.update');
     Route::delete('/drives/{drive}',                   [DriveController::class, 'destroy'])->name('drives.destroy');
 
-    // ─── Images (Gestión interna bajo equipos) ───────────────────────────────
     Route::post('/computers/{computer}/images',                [ImageController::class, 'store'])->name('computers.images.store');
     Route::delete('/computers/{computer}/images/{image}',      [ImageController::class, 'destroy'])->name('computers.images.destroy');
 

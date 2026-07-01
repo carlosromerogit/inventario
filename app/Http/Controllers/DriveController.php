@@ -16,7 +16,6 @@ class DriveController extends Controller
     {
         $driveTypes = DriveType::orderBy('name')->get();
         
-        // Solo enviamos los modelos de almacenamiento
         $brandModels = BrandModel::with('brand')
             ->where('type', 'drive') 
             ->orderBy('name')
@@ -55,7 +54,6 @@ class DriveController extends Controller
             ->orderBy('name')
             ->get();
 
-        // Extraemos la computadora y las capacidades numéricas directamente desde el registro del disco
         $computer      = $drive->computer;
         $currentNumber = $drive->capacity_value;
         $currentUnit   = $drive->capacity_unit;
@@ -94,8 +92,6 @@ class DriveController extends Controller
         return redirect()->route('computers.show', $computerId)
                          ->with('success', 'Disco removido con éxito.');
     }
-
-    // ─── Helpers ──────────────────────────────────────────────────────────────
 
     private function calculateMb(int $value, string $unit): int
     {

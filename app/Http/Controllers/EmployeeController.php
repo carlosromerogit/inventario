@@ -13,10 +13,8 @@ class EmployeeController extends Controller
     //
     public function index(Request $request): View
     {
-    // Iniciamos la consulta base con sus relaciones
     $query = Employee::with(['department', 'computers']);
 
-    // 1. Filtro por Texto: Nombre o Apellido
     if ($request->filled('search')) {
         $search = $request->input('search');
         $query->where(function ($q) use ($search) {
@@ -25,26 +23,22 @@ class EmployeeController extends Controller
         });
     }
 
-    // 2. Filtro por Departamento
     if ($request->filled('department_id')) {
         $query->where('department_id', $request->input('department_id'));
     }
 
-    // 3. Filtro por Estado de Hardware (¿Tiene o no PC?)
     if ($request->filled('has_computer')) {
         if ($request->input('has_computer') === 'yes') {
-            $query->has('computers'); // Empleados con al menos 1 computadora
+            $query->has('computers');
         } elseif ($request->input('has_computer') === 'no') {
-            $query->doesntHave('computers'); // Empleados sin computadoras
+            $query->doesntHave('computers');
         }
     }
 
-    // Ordenamos por apellido, paginamos y adjuntamos las variables de la URL
     $employees = $query->orderBy('last_name')
                        ->paginate(15)
                        ->withQueryString();
 
-    // Cargamos los departamentos para el selector del formulario
     $departments = Department::orderBy('name')->get();
 
     return view('employees.index', compact('employees', 'departments'));

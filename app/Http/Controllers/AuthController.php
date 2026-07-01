@@ -19,7 +19,6 @@ class AuthController extends Controller
 
     public function login(Request $request): RedirectResponse
     {
-        // Cambiamos 'email' por 'username' en la validación
         $credentials = $request->validate([
             'username' => ['required', 'string'],
             'password' => ['required', 'string'],
@@ -30,7 +29,6 @@ class AuthController extends Controller
 
         $remember = $request->boolean('remember');
 
-        // Intentamos autenticar usando el username nativo de Laravel
         if (Auth::attempt($credentials, $remember)) {
             $request->session()->regenerate();
 
@@ -47,7 +45,7 @@ class AuthController extends Controller
     {
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'username' => ['required', 'string', 'max:50', 'unique:users'], // <-- Validar username único
+            'username' => ['required', 'string', 'max:50', 'unique:users'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
         ], [
@@ -63,7 +61,7 @@ class AuthController extends Controller
 
         $user = User::create([
             'name' => $request->name,
-            'username' => $request->username, // <-- Guardar en BD
+            'username' => $request->username,
             'email' => $request->email,
             'password' => Hash::make($request->password),
         ]);

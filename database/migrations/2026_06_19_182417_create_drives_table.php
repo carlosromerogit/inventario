@@ -17,9 +17,9 @@ return new class extends Migration
             $table->foreignId('drive_type_id')->constrained()->restrictOnDelete();
             $table->foreignId('brand_model_id')->constrained()->restrictOnDelete();
 
-            $table->integer('capacity_value'); // Ej: 512, 1, 2
-            $table->string('capacity_unit');   // Ej: 'GB', 'TB', 'MB'
-            $table->integer('capacity_in_mb'); // Ej: 512000, 1024000 (Para ordenar y filtrar)
+            $table->integer('capacity_value');
+            $table->string('capacity_unit');  
+            $table->integer('capacity_in_mb');
 
             $table->timestamps();
         });

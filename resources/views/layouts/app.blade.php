@@ -10,7 +10,6 @@
 <body class="h-full font-sans antialiased text-slate-800">
     <div class="flex h-full min-h-screen">
 
-        {{-- Sidebar --}}
         <aside class="w-64 shrink-0 bg-slate-900 text-slate-300 flex flex-col border-r border-slate-950">
             <div class="px-6 py-5 border-b border-slate-800">
                 <a href="{{ route('dashboard') }}" class="flex items-center gap-2">
@@ -20,7 +19,6 @@
             </div>
 
             <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-6">
-                {{-- Módulo General --}}
                 <div>
                     <p class="px-3 text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">General</p>
                     <x-nav-link :route="'dashboard'" :active="request()->routeIs('dashboard')">
@@ -28,7 +26,6 @@
                     </x-nav-link>
                 </div>
 
-                {{-- Módulo Inventario --}}
                 <div>
                     <p class="px-3 text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Inventario</p>
                     <x-nav-link :route="'computers.index'" :active="request()->routeIs('computers.*')">
@@ -36,7 +33,6 @@
                     </x-nav-link>
                 </div>
 
-                {{-- Módulo Directorio --}}
                 <div>
                     <p class="px-3 text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Directorio</p>
                     <x-nav-link :route="'employees.index'" :active="request()->routeIs('employees.*')">
@@ -47,7 +43,6 @@
                     </x-nav-link>
                 </div>
 
-                {{-- Módulo Catálogos --}}
                 <div>
                     <p class="px-3 text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Catálogos</p>
                     <x-nav-link :route="'brands.index'" :active="request()->routeIs('brands.*')">
@@ -66,26 +61,21 @@
             </nav>
         </aside>
 
-        {{-- Main content --}}
         <div class="flex-1 flex flex-col min-w-0 overflow-x-hidden">
             
-            {{-- Header Optimizado con Información de Sesión --}}
             <header class="bg-white border-b border-slate-200 px-8 py-4 shrink-0 flex items-center justify-between shadow-xs">
                 <div>
                     <h1 class="text-lg font-semibold text-slate-900">@yield('header', 'Inventario')</h1>
                 </div>
                 
-                {{-- Sección de Usuario Autenticado --}}
                 <div class="flex items-center gap-4">
                     <div class="text-right">
                         <p class="text-sm font-medium text-slate-800">{{ Auth::user()->name }}</p>
                         <p class="text-xs text-slate-400 font-mono">@<span>{{ Auth::user()->username }}</span></p>
                     </div>
                     
-                    {{-- Separador Visual --}}
                     <div class="h-6 w-px bg-slate-200"></div>
 
-                    {{-- Botón de Logout Seguro --}}
                     <form action="{{ route('logout') }}" method="POST" class="inline">
                         @csrf
                         <button type="submit" 
@@ -99,11 +89,9 @@
                 </div>
             </header>
 
-            {{-- Main view --}}
             <main class="px-8 py-6">
                 <div class="w-full">
                     
-                    {{-- Alerta de éxito --}}
                     @if (session('success'))
                         <div class="mb-6 rounded-md bg-emerald-50 border border-emerald-200 px-4 py-3 text-sm text-emerald-800 flex items-center justify-between">
                             <div class="flex items-center gap-2">
@@ -113,7 +101,6 @@
                         </div>
                     @endif
 
-                    {{-- Alertas de Errores Globales --}}
                     @if ($errors->any())
                         <div class="mb-6 rounded-md bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-800">
                             <p class="font-medium mb-1 flex items-center gap-2">

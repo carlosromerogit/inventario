@@ -19,16 +19,10 @@ class Drive extends Model
         'capacity_in_mb',
     ];
 
-    /**
-     * ACCESOR: Formatea de forma automática la capacidad para las vistas.
-     * Convierte los datos nativos de la BD en un string limpio como "512 GB" o "2 TB".
-     */
     public function getFormattedCapacityAttribute(): string
     {
         return $this->capacity_value . ' ' . $this->capacity_unit;
     }
-
-    // ─── Relaciones del Modelo ───────────────────────────────────────────────
 
     public function computer(): BelongsTo
     {
