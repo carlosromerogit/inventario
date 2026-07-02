@@ -23,7 +23,6 @@
             <form action="{{ route('login') }}" method="POST" class="space-y-5">
                 @csrf
                 
-                {{-- Nombre de usuario --}}
                 <div>
                     <label for="username" class="block text-sm font-medium text-slate-700 mb-1">
                         Nombre de usuario
@@ -33,7 +32,7 @@
                                name="username" 
                                type="text" 
                                required 
-                               autocomplete="username" 
+                               autocomplete="off" 
                                autofocus
                                value="{{ old('username') }}"
                                class="block w-full rounded-md border text-sm px-3 py-2 text-slate-800 placeholder-slate-400 shadow-xs transition duration-150 ease-in-out focus:ring-1 focus:outline-hidden @error('username') border-red-300 text-red-900 focus:border-red-500 focus:ring-red-500 @else border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 @enderror">
@@ -43,7 +42,6 @@
                     @enderror
                 </div>
 
-                {{-- Contraseña --}}
                 <div>
                     <label for="password" class="block text-sm font-medium text-slate-700 mb-1">
                         Contraseña
@@ -52,7 +50,7 @@
                         <input id="password" 
                                name="password" 
                                type="password" 
-                               autocomplete="current-password" 
+                               autocomplete="off" 
                                required
                                class="block w-full rounded-md border text-sm px-3 py-2 text-slate-800 placeholder-slate-400 shadow-xs transition duration-150 ease-in-out focus:ring-1 focus:outline-hidden @error('password') border-red-300 text-red-900 focus:border-red-500 focus:ring-red-500 @else border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 @enderror">
                     </div>
@@ -61,7 +59,6 @@
                     @enderror
                 </div>
 
-                {{-- Recordarme --}}
                 <div class="flex items-center justify-between">
                     <div class="flex items-center">
                         <input id="remember" name="remember" type="checkbox" 
@@ -72,7 +69,6 @@
                     </div>
                 </div>
 
-                {{-- Botón de Envío --}}
                 <div>
                     <button type="submit" 
                             class="flex w-full justify-center rounded-md bg-slate-900 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-slate-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900 transition cursor-pointer">
