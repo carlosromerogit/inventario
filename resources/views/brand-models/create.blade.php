@@ -18,13 +18,18 @@
                     :selected="old('brand_id')" 
                     required 
                     placeholder="Seleccione una marca..." />
-
+                    @error('brand_id')
+                        <p class="mt-1.5 text-xs text-red-600 font-medium">{{ $message }}</p>
+                    @enderror
                 <x-input 
                     name="name" 
                     label="Nombre del modelo" 
                     :value="old('name')" 
                     placeholder="Ej. OptiPlex 7080 o A400 SSD" 
                     required />
+                    @error('name')
+                        <p class="mt-1.5 text-xs text-red-600 font-medium">{{ $message }}</p>
+                    @enderror
 
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1">

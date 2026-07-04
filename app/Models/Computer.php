@@ -8,45 +8,52 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Computer extends Model
 {
-    //
     protected $fillable = [
         'brand_model_id',
         'serial',
         'department_id',
         'processor',
         'ram',
+        'hostname',
+        'fixed_asset',
         'employee_id',
         'operating_system_id',
+        'company_id',  
+        'status',    
     ];
- 
+
     public function brandModel(): BelongsTo
     {
         return $this->belongsTo(BrandModel::class);
     }
- 
+
     public function department(): BelongsTo
     {
         return $this->belongsTo(Department::class);
     }
- 
+
     public function employee(): BelongsTo
     {
         return $this->belongsTo(Employee::class);
     }
- 
+
     public function operatingSystem(): BelongsTo
     {
         return $this->belongsTo(OperatingSystem::class);
     }
- 
+
+    public function company(): BelongsTo
+    {
+        return $this->belongsTo(Company::class);
+    }
+
     public function drives(): HasMany
     {
         return $this->hasMany(Drive::class);
     }
- 
+
     public function images(): HasMany
     {
         return $this->hasMany(Image::class);
     }
-
 }

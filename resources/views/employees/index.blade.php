@@ -4,131 +4,212 @@
 @section('header', 'Empleados')
 
 @section('content')
-    <div class="bg-white rounded-lg border border-slate-200 shadow-sm p-4 mb-6">
-        <form action="{{ route('employees.index') }}" method="GET" class="space-y-4">
-            <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                
-                <div>
-                    <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1 select-none">Buscar Empleado</label>
-                    <input type="text" 
-                           name="search" 
-                           value="{{ request('search') }}" 
-                           placeholder="Nombre o apellido..." 
-                           class="block w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 placeholder-slate-400 shadow-xs transition duration-150 ease-in-out focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden">
-                </div>
 
-                <div>
-                    <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1 select-none">Departamento</label>
-                    <select name="department_id" 
-                            class="block w-full rounded-md border border-slate-300 bg-white py-2 pl-3 pr-10 text-sm text-slate-800 shadow-xs transition duration-150 ease-in-out focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden cursor-pointer">
-                        <option value="">Todos</option>
-                        @foreach($departments as $dept)
-                            <option value="{{ $dept->id }}" {{ request('department_id') == $dept->id ? 'selected' : '' }}>
-                                {{ $dept->name }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
+    {{-- FILTROS --}}
+{{-- FILTROS --}}
+<div class="bg-white rounded-lg border border-slate-200 shadow-sm p-4 mb-6">
+    <form action="{{ route('employees.index') }}" method="GET" class="space-y-4">
 
-                <div>
-                    <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1 select-none">Equipos asignados</label>
-                    <select name="has_computer" 
-                            class="block w-full rounded-md border border-slate-300 bg-white py-2 pl-3 pr-10 text-sm text-slate-800 shadow-xs transition duration-150 ease-in-out focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden cursor-pointer">
-                        <option value="">Todos</option>
-                        <option value="yes" {{ request('has_computer') === 'yes' ? 'selected' : '' }}>Con equipo asignado</option>
-                        <option value="no" {{ request('has_computer') === 'no' ? 'selected' : '' }}>Sin equipo asignado</option>
-                    </select>
-                </div>
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-5">
 
+            {{-- BUSCAR --}}
+            <div>
+                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">
+                    Buscar Empleado
+                </label>
+                <input type="text"
+                       name="search"
+                       value="{{ request('search') }}"
+                       placeholder="Nombre o apellido..."
+                       class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
             </div>
 
-            <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
-                @if(request()->anyFilled(['search', 'department_id', 'has_computer']))
-                    <a href="{{ route('employees.index') }}" 
-                       class="rounded-md bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-200 transition">
-                        Limpiar filtros
-                    </a>
-                @endif
-                <button type="submit" 
-                        class="rounded-md bg-slate-800 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700 shadow-sm transition cursor-pointer">
-                    Aplicar Filtros
-                </button>
+            {{-- CODIGO --}}
+            <div>
+                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">
+                    Código
+                </label>
+                <input type="text"
+                       name="employee_code"
+                       value="{{ request('employee_code') }}"
+                       placeholder="Ej. EMP-001"
+                       class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
             </div>
-        </form>
-    </div>
 
+            {{-- DEPARTAMENTO --}}
+            <div>
+                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">
+                    Departamento
+                </label>
+                <select name="department_id"
+                    class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
+                    <option value="">Todos</option>
+                    @foreach($departments as $dept)
+                        <option value="{{ $dept->id }}"
+                            {{ request('department_id') == $dept->id ? 'selected' : '' }}>
+                            {{ $dept->name }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            {{-- EMPRESA --}}
+            <div>
+                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">
+                    Empresa
+                </label>
+                <select name="company_id"
+                    class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
+                    <option value="">Todas</option>
+                    @foreach($companies as $company)
+                        <option value="{{ $company->id }}"
+                            {{ request('company_id') == $company->id ? 'selected' : '' }}>
+                            {{ $company->name }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            {{-- JORNADA (WORK SHIFT) --}}
+            <div>
+                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">
+                    Jornada
+                </label>
+                <select name="work_shift"
+                    class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
+                    <option value="">Todas</option>
+                    <option value="morning" {{ request('work_shift') == 'morning' ? 'selected' : '' }}>
+                        Mañana
+                    </option>
+                    <option value="afternoon" {{ request('work_shift') == 'afternoon' ? 'selected' : '' }}>
+                        Tarde
+                    </option>
+                    <option value="night" {{ request('work_shift') == 'night' ? 'selected' : '' }}>
+                        Noche
+                    </option>
+                </select>
+            </div>
+
+        </div>
+
+        {{-- BOTONES --}}
+        <div class="flex justify-end gap-2 pt-2 border-t border-slate-100">
+
+            @if(request()->anyFilled(['search', 'employee_code', 'department_id', 'company_id', 'work_shift']))
+                <a href="{{ route('employees.index') }}"
+                   class="rounded-md bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-200">
+                    Limpiar
+                </a>
+            @endif
+
+            <button type="submit"
+                class="rounded-md bg-slate-800 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700">
+                Filtrar
+            </button>
+
+        </div>
+
+    </form>
+</div>
+
+    {{-- HEADER --}}
     <div class="flex items-center justify-between mb-6">
         <p class="text-sm text-slate-500">
-            {{ $employees->total() }} {{ $employees->total() === 1 ? 'empleado encontrado' : 'empleados encontrados' }}
+            {{ $employees->total() }} empleados encontrados
         </p>
-        <x-button-secondary :href="route('employees.create')" class="!bg-indigo-600 !text-white !ring-0 hover:!bg-indigo-500 shadow-sm transition">
+
+        <x-button-secondary :href="route('employees.create')"
+            class="!bg-indigo-600 !text-white hover:!bg-indigo-500">
             + Nuevo empleado
         </x-button-secondary>
     </div>
 
-    <div class="bg-white rounded-lg border border-slate-200 overflow-hidden shadow-sm">
+    {{-- TABLA --}}
+    <div class="bg-white rounded-lg border border-slate-200 overflow-hidden">
+
         <table class="min-w-full divide-y divide-slate-200">
+
             <thead class="bg-slate-50">
                 <tr>
-                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Nombre</th>
-                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Departamento</th>
-                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Equipos TI</th>
-                    <th class="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-slate-500">Acciones</th>
+                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase">Nombre</th>
+                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase">Departamento</th>
+                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase">Empresa</th>
+                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase">Equipos</th>
+                    <th class="px-6 py-3 text-right text-xs font-semibold uppercase">Acciones</th>
                 </tr>
             </thead>
+
             <tbody class="divide-y divide-slate-100">
+
                 @forelse ($employees as $employee)
-                    <tr class="hover:bg-slate-50/80 transition-colors">
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <a href="{{ route('employees.show', $employee) }}" class="text-sm font-medium text-indigo-600 hover:text-indigo-900 transition">
+                    <tr class="hover:bg-slate-50">
+
+                        {{-- NOMBRE --}}
+                        <td class="px-6 py-4">
+                            <a href="{{ route('employees.show', $employee) }}"
+                               class="text-sm font-medium text-indigo-600 hover:text-indigo-800">
                                 {{ $employee->last_name }}, {{ $employee->first_name }}
                             </a>
                         </td>
-                        
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            @if ($employee->department)
-                                <span class="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-700 select-none">
-                                    {{ $employee->department->name }}
+
+                        {{-- DEPARTAMENTO --}}
+                        <td class="px-6 py-4 text-sm text-slate-600">
+                            {{ $employee->department?->name ?? '—' }}
+                        </td>
+
+                        {{-- EMPRESA --}}
+                        <td class="px-6 py-4 text-sm text-slate-600">
+                            {{ $employee->company?->name ?? '—' }}
+                        </td>
+
+                        {{-- EQUIPOS --}}
+                        <td class="px-6 py-4 text-sm">
+                            @if($employee->computers->count())
+                                <span class="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 border border-green-200">
+                                    {{ $employee->computers->count() }} equipo(s)
                                 </span>
                             @else
-                                <span class="text-xs text-slate-400">—</span>
+                                <span class="text-slate-400">Sin equipos</span>
                             @endif
                         </td>
 
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            @if($employee->computers->isNotEmpty())
-                                <span class="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 border border-green-200 select-none">
-                                    💻 {{ $employee->computers->count() }} {{ $employee->computers->count() === 1 ? 'Equipo' : 'Equipos' }}
-                                </span>
-                            @else
-                                <span class="inline-flex items-center rounded-md bg-slate-50 px-2 py-1 text-xs font-medium text-slate-400 border border-slate-200 select-none">
-                                    Sin hardware
-                                </span>
-                            @endif
-                        </td>
+                        {{-- ACCIONES --}}
+                        <td class="px-6 py-4 text-right space-x-3 text-sm">
+                            <a href="{{ route('employees.show', $employee) }}"
+                               class="text-slate-600 hover:text-indigo-600">Ver</a>
 
-                        <td class="px-6 py-4 text-right text-sm space-x-3 whitespace-nowrap">
-                            <a href="{{ route('employees.show', $employee) }}" class="text-slate-600 hover:text-indigo-600 font-medium transition">Ver</a>
-                            <a href="{{ route('employees.edit', $employee) }}" class="text-indigo-600 hover:text-indigo-800 font-medium transition">Editar</a>
-                            <form action="{{ route('employees.destroy', $employee) }}" method="POST" class="inline" onsubmit="return confirm('¿Eliminar este empleado?');">
+                            <a href="{{ route('employees.edit', $employee) }}"
+                               class="text-indigo-600 hover:text-indigo-800">Editar</a>
+
+                            <form action="{{ route('employees.destroy', $employee) }}"
+                                  method="POST"
+                                  class="inline"
+                                  onsubmit="return confirm('¿Eliminar empleado?')">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="text-red-600 hover:text-red-800 font-medium transition cursor-pointer">Eliminar</button>
+
+                                <button class="text-red-600 hover:text-red-800">
+                                    Eliminar
+                                </button>
                             </form>
                         </td>
+
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="4" class="px-6 py-12 text-center text-sm text-slate-400">
-                            No se encontraron empleados con los criterios seleccionados.
+                        <td colspan="5" class="text-center py-10 text-sm text-slate-400">
+                            No hay empleados registrados.
                         </td>
                     </tr>
                 @endforelse
+
             </tbody>
         </table>
     </div>
 
+    {{-- PAGINACIÓN --}}
     <div class="mt-4">
         {{ $employees->links() }}
     </div>
+
 @endsection

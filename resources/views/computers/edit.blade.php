@@ -10,254 +10,379 @@
 
     <div class="space-y-6">
 
+        {{-- ================= DATOS ================= --}}
         <div class="bg-white rounded-lg border border-slate-200 p-6">
             <h2 class="text-sm font-semibold text-slate-700 mb-5">Datos del equipo</h2>
+
             <div class="grid grid-cols-2 gap-5">
+
                 <x-select name="brand_model_id" label="Marca / Modelo"
                     :options="$brandModels->mapWithKeys(fn($m) => [$m->id => $m->brand->name . ' — ' . $m->name])"
                     :selected="old('brand_model_id', $computer->brand_model_id)"
                     required />
-                <x-input name="serial" label="Número de serie" required placeholder="Ej. SN-00123" :value="old('serial', $computer->serial)" />
-                <x-input name="processor" label="Procesador" placeholder="Ej. Intel Core i5-10400" :value="old('processor', $computer->processor)" />
-                <x-input name="ram" label="RAM" placeholder="Ej. 16GB DDR4" :value="old('ram', $computer->ram)" />
+
+                <x-input name="serial" label="Número de serie" required
+                    :value="old('serial', $computer->serial)" />
+
+                <x-input name="hostname" label="Hostname"
+                    :value="old('hostname', $computer->hostname)" />
+
+                <x-input name="processor" label="Procesador"
+                    :value="old('processor', $computer->processor)" />
+
+                <x-input name="ram" label="RAM"
+                    :value="old('ram', $computer->ram)" />
+
                 <x-select name="operating_system_id" label="Sistema operativo"
-                    :options="$operatingSystems->pluck('name', 'id')" :selected="old('operating_system_id', $computer->operating_system_id)" placeholder="Seleccionar S.O..." />
+                    :options="$operatingSystems->pluck('name', 'id')"
+                    :selected="old('operating_system_id', $computer->operating_system_id)" />
+
                 <x-select name="department_id" label="Departamento"
-                    :options="$departments->pluck('name', 'id')" :selected="old('department_id', $computer->department_id)" placeholder="Seleccionar departamento..." />
-                <div class="col-span-2">
+                    :options="$departments->pluck('name', 'id')"
+                    :selected="old('department_id', $computer->department_id)" />
+
+                {{-- 🔥 NUEVO: EMPRESA --}}
+                <x-select name="company_id" label="Empresa"
+                    :options="$companies->pluck('name', 'id')"
+                    :selected="old('company_id', $computer->company_id)" />
+
+             
+
                     <x-select name="employee_id" label="Empleado asignado"
                         :options="$employees->mapWithKeys(fn($e) => [$e->id => $e->last_name . ', ' . $e->first_name])"
                         :selected="old('employee_id', $computer->employee_id)"
                         placeholder="Sin asignar" />
-                </div>
+
+                   <x-input name="fixed_asset" label="Activo fijo"
+                    :value="old('fixed_asset', $computer->fixed_asset)" />
+
+                   {{-- 🔥 NUEVO: ESTADO --}}
+                <x-select name="status" label="Estado"
+                    :options="[
+                         'stock' => 'En stock',
+                        'assigned' => 'Asignado',
+                        'faulty' => 'Averiado',
+                        'obsolete' => 'Obsoleto'
+                    ]"
+                    :selected="old('status', $computer->status)" />
+
             </div>
         </div>
 
-        <div class="bg-white rounded-lg border border-slate-200 p-6">
-            <div class="flex items-center justify-between mb-5">
-                <h2 class="text-sm font-semibold text-slate-700">Discos duros instalados</h2>
-                <button type="button" onclick="addDrive()"
-                        class="inline-flex items-center rounded-md bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-200 transition">
-                    + Agregar nuevo disco
-                </button>
-            </div>
+        {{-- ================= DISCOS ================= --}}
 
-            @if($computer->drives->isNotEmpty())
-                <div class="mb-5 space-y-2">
-                    <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Discos actuales:</h3>
-                    <div class="divide-y divide-slate-200 border border-slate-200 rounded-md bg-slate-50 p-2 space-y-2">
-                        @foreach($computer->drives as $drive)
-                            <div class="flex items-center justify-between py-2 px-3">
-                                <span class="text-sm text-slate-700 font-medium">
-                                    {{ $drive->driveType->name }} — {{ $drive->brandModel->brand->name }} {{ $drive->brandModel->name }} 
-                                    <span class="text-slate-500 font-semibold">({{ $drive->formatted_capacity }})</span>
-                                </span>
-                                <div class="flex items-center gap-3 text-sm font-medium">
-                                    <a href="{{ route('drives.edit', $drive) }}" class="text-indigo-600 hover:text-indigo-900">Editar pieza</a>
-                                    
-                                    <button type="button" 
-                                            onclick="if(confirm('¿Eliminar este disco del inventario de este equipo?')) { document.getElementById('delete-drive-{{ $drive->id }}').submit(); }"
-                                            class="text-red-600 hover:text-red-900">
-                                        Eliminar
-                                    </button>
-                                </div>
-                            </div>
-                        @endforeach
+        {{-- ================= DISCOS ================= --}}
+<div class="bg-white rounded-lg border border-slate-200 p-6 shadow-xs">
+
+    <div class="flex items-center justify-between mb-5">
+        <h2 class="text-sm font-semibold text-slate-700">Discos</h2>
+
+        <button type="button"
+                onclick="addDrive()"
+                class="rounded-md bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-200 transition">
+            + Agregar disco
+        </button>
+    </div>
+
+    {{-- Discos ya instalados --}}
+    @if($computer->drives->isNotEmpty())
+        <div class="mb-6 space-y-3">
+
+            @foreach($computer->drives as $drive)
+
+                <div class="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
+
+                    <div>
+                        <p class="font-medium text-slate-800">
+                            {{ $drive->driveType->name }}
+                            —
+                            {{ $drive->brandModel->brand->name }}
+                            {{ $drive->brandModel->name }}
+                        </p>
+
+                        <p class="text-sm text-slate-500">
+                            {{ $drive->formatted_capacity }}
+                        </p>
                     </div>
+
+                    <div class="flex gap-3">
+
+                        <a href="{{ route('drives.edit', $drive) }}"
+                           class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">
+                            Editar
+                        </a>
+
+                        <button type="button"
+                                onclick="if(confirm('¿Eliminar este disco?')) document.getElementById('delete-drive-{{ $drive->id }}').submit();"
+                                class="text-red-600 hover:text-red-800 text-sm font-medium">
+                            Eliminar
+                        </button>
+
+                    </div>
+
                 </div>
-            @endif
 
-            <div id="drives-container" class="space-y-3"></div>
-            <p id="drives-empty" class="text-sm text-slate-400 text-center py-4">
-                No hay nuevos discos agregados para este equipo en esta sesión.
-            </p>
+            @endforeach
+
         </div>
+    @endif
 
+    {{-- Discos nuevos --}}
+    <div id="drives-container" class="space-y-3"></div>
+
+    <p id="drives-empty" class="text-sm text-slate-400 text-center py-4">
+        Sin discos nuevos agregados
+    </p>
+
+</div>
+ 
+        {{-- ================= IMÁGENES ================= --}}
         <div class="bg-white rounded-lg border border-slate-200 p-6">
             <h2 class="text-sm font-semibold text-slate-700 mb-4">Imágenes del equipo</h2>
-            
+
             @if($computer->images->isNotEmpty())
                 <div class="grid grid-cols-6 gap-3 mb-6">
                     @foreach($computer->images as $img)
-                        <div class="relative aspect-square rounded-md overflow-hidden border border-slate-200 bg-slate-50">
-                            <img src="{{ asset('storage/' . $img->path) }}" class="w-full h-full object-cover">
+                        <div class="aspect-square rounded-md overflow-hidden border border-slate-200">
+                            <img src="{{ asset('storage/' . $img->path) }}"
+                                 class="w-full h-full object-cover">
                         </div>
                     @endforeach
                 </div>
             @endif
 
-            <div class="flex items-center justify-between mb-4 pt-4 border-t border-slate-100">
-                <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Subir más imágenes</h3>
-                <button type="button" onclick="document.getElementById('images-input').click()"
-                        class="inline-flex items-center rounded-md bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-200 transition">
-                    + Seleccionar archivos
-                </button>
-            </div>
+            <button type="button"
+                    onclick="document.getElementById('images-input').click()"
+                    class="rounded-md bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-200">
+                + Agregar imágenes
+            </button>
 
-            <input type="file" id="images-input" name="images[]" multiple accept="image/*" class="hidden" onchange="handleImageSelect(this)">
-            <div id="image-preview-container" class="grid grid-cols-4 gap-3 sm:grid-cols-6 lg:grid-cols-8 mb-3 hidden"></div>
-            <p id="images-empty" class="text-sm text-slate-400 text-center py-2">No se han seleccionado nuevas imágenes.</p>
+            <input type="file" id="images-input" name="images[]" multiple class="hidden"
+                   onchange="handleImageSelect(this)">
+
+            <div id="image-preview-container" class="grid grid-cols-6 gap-3 hidden mt-3"></div>
+
+            <p id="images-empty" class="text-sm text-slate-400 text-center py-3">
+                No hay nuevas imágenes seleccionadas.
+            </p>
         </div>
 
-        <div class="flex items-center gap-3">
-            <x-button>Guardar cambios</x-button>
-            <x-button-secondary :href="route('computers.show', $computer)">Cancelar</x-button-secondary>
+        {{-- ================= BOTONES ================= --}}
+        <div class="flex gap-3">
+            <button class="bg-indigo-600 text-white px-4 py-2 rounded-md">
+                Guardar cambios
+            </button>
+
+            <a href="{{ route('computers.show', $computer) }}"
+               class="px-4 py-2 border rounded-md">
+                Cancelar
+            </a>
         </div>
+
     </div>
 </form>
-
+{{-- Formularios para eliminar discos --}}
 @foreach($computer->drives as $drive)
-    <form id="delete-drive-{{ $drive->id }}" action="{{ route('drives.destroy', $drive) }}" method="POST" class="hidden">
-        @csrf
-        @method('DELETE')
-    </form>
+<form id="delete-drive-{{ $drive->id }}"
+      action="{{ route('drives.destroy', $drive) }}"
+      method="POST"
+      class="hidden">
+    @csrf
+    @method('DELETE')
+</form>
 @endforeach
-
 <script>
-var driveIndex = 0;
-var driveTypes  = @json($driveTypes->map(fn($d) => ['id' => $d->id, 'name' => $d->name]));
-var driveModels = @json($driveModels->map(fn($m) => ['id' => $m->id, 'name' => $m->brand->name . ' — ' . $m->name]));
+/* ===========================================================
+|  DISCOS
+=========================================================== */
 
-function buildSelect(name, options) {
-    var select = document.createElement('select');
-    select.name = name;
-    select.required = true;
-    select.className = 'block w-full rounded-md border-slate-300 shadow-sm text-sm focus:border-indigo-500 focus:ring-indigo-500';
-    var ph = document.createElement('option');
-    ph.value = ''; ph.textContent = 'Seleccionar...';
-    select.appendChild(ph);
-    options.forEach(function(opt) {
-        var o = document.createElement('option');
-        o.value = opt.id; o.textContent = opt.name;
-        select.appendChild(o);
-    });
-    return select;
-}
+let driveIndex = 0;
 
-function buildField(labelText, innerElement) {
-    var div = document.createElement('div');
-    var label = document.createElement('label');
-    label.className = 'block text-xs font-medium text-slate-600 mb-1';
-    label.innerHTML = labelText + ' <span class="text-red-500">*</span>';
-    div.appendChild(label);
-    div.appendChild(innerElement);
-    return div;
-}
+function addDrive(prefilled = null) {
 
-function addDrive() {
-    var i = driveIndex++;
-    var container = document.getElementById('drives-container');
+    const i = driveIndex++;
+
+    const container = document.getElementById('drives-container');
     document.getElementById('drives-empty').style.display = 'none';
 
-    var row = document.createElement('div');
-    row.className = 'grid grid-cols-4 gap-4 p-4 bg-slate-50 rounded-md border border-slate-200';
-    row.id = 'drive-row-' + i;
+    const row = document.createElement('div');
 
-    row.appendChild(buildField('Tipo', buildSelect('drives[' + i + '][drive_type_id]', driveTypes)));
-    row.appendChild(buildField('Marca / Modelo', buildSelect('drives[' + i + '][brand_model_id]', driveModels)));
+    row.className =
+        "drive-row grid grid-cols-5 gap-4 p-4 bg-white rounded-lg border border-slate-200 items-end";
 
-    var capacityGroup = document.createElement('div');
-    capacityGroup.className = 'grid grid-cols-3 gap-1.5';
+    row.innerHTML = `
+        <select name="drives[${i}][drive_type_id]"
+            class="block w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 focus:outline-none transition">
+            <option value="">Tipo</option>
+            @foreach($driveTypes as $t)
+                <option value="{{ $t->id }}">{{ $t->name }}</option>
+            @endforeach
+        </select>
 
-    var numInput = document.createElement('input');
-    numInput.type = 'number';
-    numInput.name = 'drives[' + i + '][cap_number]';
-    numInput.placeholder = 'Ej. 512';
-    numInput.required = true;
-    numInput.min = '1';
-    numInput.className = 'col-span-2 block w-full rounded-md border-slate-300 shadow-sm text-sm focus:border-indigo-500 focus:ring-indigo-500';
-    capacityGroup.appendChild(numInput);
+        <select name="drives[${i}][brand_model_id]"
+            class="block w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 focus:outline-none transition">
+            <option value="">Modelo</option>
+            @foreach($driveModels as $m)
+                <option value="{{ $m->id }}">{{ $m->brand->name }} - {{ $m->name }}</option>
+            @endforeach
+        </select>
 
-    var unitSelect = document.createElement('select');
-    unitSelect.name = 'drives[' + i + '][cap_unit]';
-    unitSelect.className = 'block w-full rounded-md border-slate-300 shadow-sm text-sm focus:border-indigo-500 focus:ring-indigo-500';
-    ['GB', 'TB', 'MB'].forEach(function(unit) {
-        var opt = document.createElement('option');
-        opt.value = unit; opt.textContent = unit;
-        unitSelect.appendChild(opt);
-    });
-    capacityGroup.appendChild(unitSelect);
+        <input
+            type="number"
+            name="drives[${i}][cap_number]"
+            placeholder="Capacidad"
+            min="1"
+            class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 focus:outline-none transition">
 
-    row.appendChild(buildField('Capacity', capacityGroup));
+        <select
+            name="drives[${i}][cap_unit]"
+            class="block w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 focus:outline-none transition">
+            <option>GB</option>
+            <option>TB</option>
+            <option>MB</option>
+        </select>
 
-    var removeDiv = document.createElement('div');
-    removeDiv.className = 'flex items-end';
-    var btn = document.createElement('button');
-    btn.type = 'button'; btn.textContent = 'Quitar';
-    btn.className = 'text-red-500 hover:text-red-700 text-xs font-medium mb-2';
-    btn.onclick = function() { removeDrive(i); };
-    removeDiv.appendChild(btn);
-    row.appendChild(removeDiv);
+        <div class="flex items-center justify-end h-10 pb-1">
+            <button
+                type="button"
+                onclick="removeDrive(this)"
+                class="text-red-600 hover:text-red-800 text-xs font-semibold px-2 py-1 rounded-md hover:bg-red-50 transition-colors">
+                Quitar
+            </button>
+        </div>
+    `;
 
     container.appendChild(row);
 }
 
-function removeDrive(i) {
-    var row = document.getElementById('drive-row-' + i);
-    if (row) row.remove();
-    if (document.getElementById('drives-container').children.length === 0) {
+function removeDrive(button) {
+
+    const row = button.closest('.drive-row');
+
+    if (!row) return;
+
+    row.remove();
+
+    const container = document.getElementById('drives-container');
+
+    if (container.children.length === 0) {
         document.getElementById('drives-empty').style.display = 'block';
     }
 }
 
-var selectedFiles = [];
+
+/* ===========================================================
+|  IMÁGENES
+=========================================================== */
+
+let selectedFiles = [];
 
 function handleImageSelect(input) {
+
     Array.from(input.files).forEach(function(file) {
-        if (!file.type.startsWith('image/')) return;
-        var index = selectedFiles.length;
+
+        if (!file.type.startsWith('image/')) {
+            return;
+        }
+
+        const index = selectedFiles.length;
+
         selectedFiles.push(file);
+
         renderPreview(file, index);
     });
+
     input.value = '';
+
     syncFiles();
 }
 
 function renderPreview(file, index) {
-    var reader = new FileReader();
+
+    const reader = new FileReader();
+
     reader.onload = function(e) {
-        var container = document.getElementById('image-preview-container');
+
+        const container = document.getElementById('image-preview-container');
+
         container.classList.remove('hidden');
+
         document.getElementById('images-empty').style.display = 'none';
 
-        var wrap = document.createElement('div');
-        wrap.className = 'relative aspect-square rounded-md overflow-hidden border border-slate-200 bg-slate-100';
+        const wrap = document.createElement('div');
+
+        wrap.className =
+            'relative aspect-square rounded-md overflow-hidden border border-slate-200 bg-slate-100';
+
         wrap.id = 'preview-' + index;
 
-        var img = document.createElement('img');
+        const img = document.createElement('img');
+
         img.src = e.target.result;
+
         img.className = 'w-full h-full object-cover';
 
-        var btn = document.createElement('button');
-        btn.type = 'button'; btn.innerHTML = '&times;';
-        btn.className = 'absolute top-1 right-1 flex items-center justify-center w-5 h-5 rounded-full bg-red-600 text-white text-xs font-bold leading-none hover:bg-red-500 transition';
-        btn.onclick = function() { removePreview(index); };
+        const btn = document.createElement('button');
+
+        btn.type = 'button';
+
+        btn.innerHTML = '&times;';
+
+        btn.className =
+            'absolute top-1 right-1 flex items-center justify-center w-5 h-5 rounded-full bg-red-600 text-white text-xs font-bold leading-none hover:bg-red-500 transition';
+
+        btn.onclick = function() {
+            removePreview(index);
+        };
 
         wrap.appendChild(img);
         wrap.appendChild(btn);
+
         container.appendChild(wrap);
     };
+
     reader.readAsDataURL(file);
 }
 
 function removePreview(index) {
+
     selectedFiles[index] = null;
-    var el = document.getElementById('preview-' + index);
-    if (el) el.remove();
+
+    const el = document.getElementById('preview-' + index);
+
+    if (el) {
+        el.remove();
+    }
+
     syncFiles();
-    var active = selectedFiles.filter(function(f) { return f !== null; });
+
+    const active = selectedFiles.filter(function(file) {
+        return file !== null;
+    });
+
     if (active.length === 0) {
-        document.getElementById('image-preview-container').classList.add('hidden');
+
+        document
+            .getElementById('image-preview-container')
+            .classList.add('hidden');
+
         document.getElementById('images-empty').style.display = 'block';
     }
 }
 
 function syncFiles() {
-    var dt = new DataTransfer();
+
+    const dt = new DataTransfer();
+
     selectedFiles.forEach(function(file) {
-        if (file !== null) dt.items.add(file);
+
+        if (file !== null) {
+            dt.items.add(file);
+        }
+
     });
+
     document.getElementById('images-input').files = dt.files;
 }
 </script>
-@endsection
+     @endsection

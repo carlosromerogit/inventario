@@ -18,8 +18,12 @@ return new class extends Migration
             $table->foreignId('department_id')->nullable()->constrained()->nullOnDelete();
             $table->string('processor')->nullable();
             $table->string('ram')->nullable();
+            $table->string('hostname')->nullable();
+            $table->string('fixed_asset')->nullable()->unique();
             $table->foreignId('employee_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('operating_system_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('company_id')->nullable()->constrained()->nullOnDelete();
+            $table->enum('status', ['stock', 'assigned', 'faulty', 'obsolete'])->default('stock');
             $table->timestamps();
         });
     }

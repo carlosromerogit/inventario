@@ -19,46 +19,69 @@
             </div>
 
             <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-6">
-                <div>
-                    <p class="px-3 text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">General</p>
-                    <x-nav-link :route="'dashboard'" :active="request()->routeIs('dashboard')">
-                        Panel de Control
-                    </x-nav-link>
-                </div>
 
-                <div>
-                    <p class="px-3 text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Inventario</p>
-                    <x-nav-link :route="'computers.index'" :active="request()->routeIs('computers.*')">
-                        Computadoras
-                    </x-nav-link>
-                </div>
+    <div>
+        <p class="px-3 text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">General</p>
+        <x-nav-link :route="'dashboard'" :active="request()->routeIs('dashboard')">
+            Panel de Control
+        </x-nav-link>
+    </div>
 
-                <div>
-                    <p class="px-3 text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Directorio</p>
-                    <x-nav-link :route="'employees.index'" :active="request()->routeIs('employees.*')">
-                        Empleados
-                    </x-nav-link>
-                    <x-nav-link :route="'departments.index'" :active="request()->routeIs('departments.*')">
-                        Departamentos
-                    </x-nav-link>
-                </div>
+    <div>
+        <p class="px-3 text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Inventario</p>
+        <x-nav-link :route="'computers.index'" :active="request()->routeIs('computers.*')">
+            Computadoras
+        </x-nav-link>
+    </div>
 
-                <div>
-                    <p class="px-3 text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Catálogos</p>
-                    <x-nav-link :route="'brands.index'" :active="request()->routeIs('brands.*')">
-                        Marcas
-                    </x-nav-link>
-                    <x-nav-link :route="'brand-models.index'" :active="request()->routeIs('brand-models.*')">
-                        Modelos
-                    </x-nav-link>
-                    <x-nav-link :route="'drive-types.index'" :active="request()->routeIs('drive-types.*')">
-                        Tipos de disco
-                    </x-nav-link>
-                    <x-nav-link :route="'operating-systems.index'" :active="request()->routeIs('operating-systems.*')">
-                        Sistemas operativos
-                    </x-nav-link>
-                </div>
-            </nav>
+    <div>
+        <p class="px-3 text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Directorio</p>
+
+        <x-nav-link :route="'employees.index'" :active="request()->routeIs('employees.*')">
+            Empleados
+        </x-nav-link>
+
+        <x-nav-link :route="'departments.index'" :active="request()->routeIs('departments.*')">
+            Departamentos
+        </x-nav-link>
+
+        <x-nav-link :route="'companies.index'" :active="request()->routeIs('companies.*')">
+            Empresas
+        </x-nav-link>
+    </div>
+
+    <div>
+        <p class="px-3 text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Catálogos</p>
+
+        <x-nav-link :route="'brands.index'" :active="request()->routeIs('brands.*')">
+            Marcas
+        </x-nav-link>
+
+        <x-nav-link :route="'brand-models.index'" :active="request()->routeIs('brand-models.*')">
+            Modelos
+        </x-nav-link>
+
+        <x-nav-link :route="'drive-types.index'" :active="request()->routeIs('drive-types.*')">
+            Tipos de disco
+        </x-nav-link>
+
+        <x-nav-link :route="'operating-systems.index'" :active="request()->routeIs('operating-systems.*')">
+            Sistemas operativos
+        </x-nav-link>
+    </div>
+@can('users.index')
+<div>
+    <p class="px-3 text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">
+        Administrador
+    </p>
+
+    <x-nav-link :route="'users.index'" :active="request()->routeIs('users.*')">
+        Usuarios
+    </x-nav-link>
+</div>
+@endcan
+
+</nav>
         </aside>
 
         <div class="flex-1 flex flex-col min-w-0 overflow-x-hidden">

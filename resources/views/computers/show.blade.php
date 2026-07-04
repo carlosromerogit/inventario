@@ -5,165 +5,263 @@
 
 @section('content')
 <div class="space-y-6">
+
+    {{-- HEADER ACTIONS --}}
     <div class="flex items-center justify-between">
-        <a href="{{ route('computers.index') }}" class="text-sm font-medium text-slate-600 hover:text-slate-900 transition">
-            &larr; Volver al listado
+        <a href="{{ route('computers.index') }}"
+           class="text-sm font-medium text-slate-600 hover:text-slate-900 transition">
+            ← Volver al listado
         </a>
-        <div>
-            <a href="{{ route('computers.edit', $computer) }}" class="rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 transition">
-                Editar equipo
-            </a>
-        </div>
+
+        <a href="{{ route('computers.edit', $computer) }}"
+           class="rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 transition">
+            Editar equipo
+        </a>
     </div>
 
     <div class="grid grid-cols-3 gap-6">
+
+        {{-- IZQUIERDA --}}
         <div class="col-span-2 space-y-6">
+
+            {{-- ESPECIFICACIONES --}}
             <div class="bg-white border border-slate-200 rounded-lg shadow-sm p-6">
-                <h3 class="text-sm font-semibold text-slate-700 mb-4">Especificaciones del Sistema</h3>
+                <h3 class="text-sm font-semibold text-slate-700 mb-4">
+                    Especificaciones del Sistema
+                </h3>
+
                 <dl class="grid grid-cols-2 gap-x-4 gap-y-4">
+
                     <div>
-                        <dt class="text-xs font-medium text-slate-400 uppercase tracking-wider">Marca / Modelo</dt>
-                        <dd class="text-sm font-medium text-slate-900 mt-0.5">{{ $computer->brandModel->brand->name }} — {{ $computer->brandModel->name }}</dd>
+                        <dt class="text-xs text-slate-400 uppercase">Marca / Modelo</dt>
+                        <dd class="text-sm font-medium text-slate-900">
+                            {{ $computer->brandModel?->brand?->name }}
+                            — {{ $computer->brandModel?->name }}
+                        </dd>
                     </div>
+
                     <div>
-                        <dt class="text-xs font-medium text-slate-400 uppercase tracking-wider">Número de Serie</dt>
-                        <dd class="text-sm font-mono font-medium text-slate-900 mt-0.5">{{ $computer->serial }}</dd>
+                        <dt class="text-xs text-slate-400 uppercase">Serie</dt>
+                        <dd class="text-sm font-mono text-slate-900">
+                            {{ $computer->serial }}
+                        </dd>
                     </div>
+        
                     <div>
-                        <dt class="text-xs font-medium text-slate-400 uppercase tracking-wider">Procesador</dt>
-                        <dd class="text-sm text-slate-900 mt-0.5">{{ $computer->processor ?? 'N/A' }}</dd>
+                        <dt class="text-xs text-slate-400 uppercase">Hostname</dt>
+                        <dd class="text-sm font-mono text-slate-900">
+                            {{ $computer->hostname }}
+                        </dd>
                     </div>
+
                     <div>
-                        <dt class="text-xs font-medium text-slate-400 uppercase tracking-wider">Memoria RAM</dt>
-                        <dd class="text-sm text-slate-900 mt-0.5">{{ $computer->ram ?? 'N/A' }}</dd>
+                        <dt class="text-xs text-slate-400 uppercase">Procesador</dt>
+                        <dd class="text-sm text-slate-900">
+                            {{ $computer->processor ?? 'N/A' }}
+                        </dd>
                     </div>
+
                     <div>
-                        <dt class="text-xs font-medium text-slate-400 uppercase tracking-wider">Sistema Operativo</dt>
-                        <dd class="text-sm text-slate-900 mt-0.5">{{ $computer->operatingSystem->name ?? 'Sin Sistema' }}</dd>
+                        <dt class="text-xs text-slate-400 uppercase">RAM</dt>
+                        <dd class="text-sm text-slate-900">
+                            {{ $computer->ram ?? 'N/A' }}
+                        </dd>
                     </div>
+
                     <div>
-                        <dt class="text-xs font-medium text-slate-400 uppercase tracking-wider">Ubicación / Departamento</dt>
-                        <dd class="text-sm text-slate-900 mt-0.5">{{ $computer->department->name ?? 'No asignado' }}</dd>
+                        <dt class="text-xs text-slate-400 uppercase">Sistema Operativo</dt>
+                        <dd class="text-sm text-slate-900">
+                            {{ $computer->operatingSystem?->name ?? 'Sin sistema' }}
+                        </dd>
                     </div>
+
+                    <div>
+                        <dt class="text-xs text-slate-400 uppercase">Departamento</dt>
+                        <dd class="text-sm text-slate-900">
+                            {{ $computer->department?->name ?? 'No asignado' }}
+                        </dd>
+                    </div>
+                    
+                    <div>
+                        <dt class="text-xs text-slate-400 uppercase">Activo fijo</dt>
+                        <dd class="text-sm text-slate-900">
+                            {{ $computer->fixed_asset ?? 'No asignado' }}
+                        </dd>
+                    </div>
+
+                    <div>
+                        <dt class="text-xs text-slate-400 uppercase">Empresa</dt>
+                        <dd class="text-sm text-slate-900">
+                            {{ $computer->company?->name ?? '—' }}
+                        </dd>
+                    </div>
+
+                    <div>
+                        <dt class="text-xs text-slate-400 uppercase">Estado</dt>
+                        <dd class="text-sm font-semibold">
+
+                            @switch($computer->status)
+                                @case('assigned')
+                                    <span class="text-green-600">Asignado</span>
+                                    @break
+
+                                @case('stock')
+                                    <span class="text-slate-600">En stock</span>
+                                    @break
+
+                                @case('faulty')
+                                    <span class="text-red-600">Averiado</span>
+                                    @break
+
+                                @case('obsolete')
+                                    <span class="text-amber-600">Obsoleto</span>
+                                    @break
+
+                                @default
+                                    <span class="text-slate-400">Sin estado</span>
+                            @endswitch
+
+                        </dd>
+                    </div>
+
                 </dl>
             </div>
 
+            {{-- DISCOS --}}
             <div class="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
+
                 <div class="p-6 border-b border-slate-100">
-                    <h3 class="text-sm font-semibold text-slate-700">Unidades de Almacenamiento Instaladas</h3>
+                    <h3 class="text-sm font-semibold text-slate-700">
+                        Unidades de almacenamiento
+                    </h3>
                 </div>
+
                 @if($computer->drives->isEmpty())
-                    <p class="text-sm text-slate-400 text-center py-8">Este equipo no cuenta con discos duros registrados.</p>
+                    <p class="text-sm text-slate-400 text-center py-8">
+                        No hay discos registrados.
+                    </p>
                 @else
                     <table class="min-w-full divide-y divide-slate-200">
                         <thead class="bg-slate-50">
                             <tr>
                                 <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Tipo</th>
-                                <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Marca / Modelo</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Modelo</th>
                                 <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Capacidad</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-slate-200 bg-white">
+
+                        <tbody class="divide-y divide-slate-100">
                             @foreach($computer->drives as $drive)
                                 <tr>
-                                    <td class="px-6 py-4 text-sm font-medium text-slate-900">{{ $drive->driveType->name }}</td>
-                                    <td class="px-6 py-4 text-sm text-slate-600">{{ $drive->brandModel->brand->name }} — {{ $drive->brandModel->name }}</td>
-                                    <td class="px-6 py-4 text-sm font-semibold text-slate-700">{{ $drive->formatted_capacity }}</td>
+                                    <td class="px-6 py-4 text-sm">
+                                        {{ $drive->driveType?->name }}
+                                    </td>
+
+                                    <td class="px-6 py-4 text-sm text-slate-600">
+                                        {{ $drive->brandModel?->brand?->name }}
+                                        — {{ $drive->brandModel?->name }}
+                                    </td>
+
+                                    <td class="px-6 py-4 text-sm font-medium text-slate-700">
+                                        {{ $drive->formatted_capacity ?? ($drive->capacity_value . ' ' . $drive->capacity_unit) }}
+                                    </td>
                                 </tr>
                             @endforeach
                         </tbody>
                     </table>
                 @endif
             </div>
+
         </div>
 
-        <div class="col-span-1 space-y-6">
+        {{-- DERECHA --}}
+        <div class="space-y-6">
+
+            {{-- CUSTODIO --}}
             <div class="bg-white border border-slate-200 rounded-lg shadow-sm p-6">
-                <h3 class="text-sm font-semibold text-slate-700 mb-3">Custodio</h3>
-                <p class="text-sm text-slate-900 font-medium">{{ $computer->employee ? $computer->employee->last_name . ', ' . $computer->employee->first_name : 'Disponible en Stock' }}</p>
+                <h3 class="text-sm font-semibold text-slate-700 mb-3">Asignado</h3>
+
+                <p class="text-sm text-slate-900 font-medium">
+                    {{ $computer->employee
+                        ? $computer->employee->last_name . ', ' . $computer->employee->first_name
+                        : 'Disponible en stock'
+                    }}
+                </p>
             </div>
 
+            {{-- GALERÍA --}}
             <div class="bg-white border border-slate-200 rounded-lg shadow-sm p-6">
-                <h3 class="text-sm font-semibold text-slate-700 mb-4">Galería de Fotos</h3>
+                <h3 class="text-sm font-semibold text-slate-700 mb-4">
+                    Galería
+                </h3>
+
                 @if($computer->images->isEmpty())
-                    <p class="text-xs text-slate-400 text-center py-6 border border-dashed border-slate-200 rounded-md">Sin imágenes cargadas.</p>
+                    <p class="text-xs text-slate-400 text-center py-6 border border-dashed border-slate-200 rounded-md">
+                        Sin imágenes
+                    </p>
                 @else
                     <div class="grid grid-cols-2 gap-2">
                         @foreach($computer->images as $img)
-                            {{-- Modificado: Añadida la clase 'gallery-item' y el atributo 'data-src' --}}
-                            <div class="aspect-square rounded-md overflow-hidden bg-slate-100 border border-slate-200 group cursor-pointer gallery-item"
+                            <div class="aspect-square rounded-md overflow-hidden bg-slate-100 border border-slate-200 cursor-pointer gallery-item"
                                  data-src="{{ asset('storage/' . $img->path) }}">
-                                <img src="{{ asset('storage/' . $img->path) }}" 
-                                     class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+                                <img src="{{ asset('storage/' . $img->path) }}"
+                                     class="w-full h-full object-cover hover:scale-105 transition">
                             </div>
                         @endforeach
                     </div>
                 @endif
             </div>
+
         </div>
     </div>
 
-    {{-- MODAL INTERACTIVO (Oculto por defecto con la clase 'hidden') --}}
-    <div id="galleryModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm transition-opacity duration-300 opacity-0">
-        {{-- Botón para cerrar (X) --}}
-        <button id="closeModal" class="absolute top-4 right-4 text-white hover:text-slate-300 p-2 focus:outline-none">
-            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-            </svg>
+    {{-- MODAL GALERÍA --}}
+    <div id="galleryModal"
+         class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 p-4 opacity-0 transition">
+
+        <button id="closeModal"
+                class="absolute top-4 right-4 text-white text-2xl">
+            ✕
         </button>
 
-        {{-- Contenedor de la Imagen Expandida --}}
-        <div class="max-w-4xl max-h-[85vh] overflow-hidden rounded-lg shadow-2xl transition-transform duration-300 scale-95">
-            <img id="modalImage" src="" class="w-full h-full object-contain max-h-[85vh]">
+        <div class="max-w-4xl max-h-[85vh]">
+            <img id="modalImage" class="w-full h-full object-contain">
         </div>
     </div>
 </div>
 
-{{-- SCRIPT JAVASCRIPT PURO --}}
+{{-- SCRIPT --}}
 <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const modal = document.getElementById('galleryModal');
-        const modalImg = document.getElementById('modalImage');
-        const closeBtn = document.getElementById('closeModal');
-        const items = document.querySelectorAll('.gallery-item');
+document.addEventListener('DOMContentLoaded', () => {
 
-        // Escuchar clics en las miniaturas de la galería
-        items.forEach(item => {
-            item.addEventListener('click', () => {
-                const imgSrc = item.getAttribute('data-src');
-                modalImg.src = imgSrc;
-                
-                // Mostrar el modal y disparar transiciones de Tailwind
-                modal.classList.remove('hidden');
-                setTimeout(() => {
-                    modal.classList.remove('opacity-0');
-                    modal.querySelector('div').classList.remove('scale-95');
-                }, 20);
-            });
-        });
+    const modal = document.getElementById('galleryModal');
+    const modalImg = document.getElementById('modalImage');
+    const closeBtn = document.getElementById('closeModal');
 
-        // Función reutilizable para cerrar el modal suavemente
-        const closeModal = () => {
-            modal.classList.add('opacity-0');
-            modal.querySelector('div').classList.add('scale-95');
-            setTimeout(() => {
-                modal.classList.add('hidden');
-                modalImg.src = ''; // Limpia la imagen para la próxima apertura
-            }, 300); // Espera que termine la animación (duration-300)
-        };
+    document.querySelectorAll('.gallery-item').forEach(item => {
+        item.addEventListener('click', () => {
+            modalImg.src = item.dataset.src;
 
-        // Cerrar al hacer clic en la 'X'
-        closeBtn.addEventListener('click', closeModal);
-
-        // Cerrar al hacer clic en el fondo oscuro
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) closeModal();
-        });
-
-        // Cerrar al presionar la tecla Escape
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && !modal.classList.contains('hidden')) closeModal();
+            modal.classList.remove('hidden');
+            setTimeout(() => modal.classList.remove('opacity-0'), 20);
         });
     });
+
+    function closeModal() {
+        modal.classList.add('opacity-0');
+        setTimeout(() => modal.classList.add('hidden'), 200);
+    }
+
+    closeBtn.addEventListener('click', closeModal);
+
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeModal();
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeModal();
+    });
+
+});
 </script>
 @endsection

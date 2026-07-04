@@ -6,12 +6,23 @@ use App\Models\Brand;
 use App\Models\BrandModel;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\View\View;
 use Illuminate\Validation\Rule;
 
-class BrandModelController extends Controller
+class BrandModelController extends Controller implements HasMiddleware
 {
-    //
+      public static function middleware(): array
+    {
+        return [
+            new Middleware('permission:brand_models.index', only: ['index', 'show']),
+            new Middleware('permission:brand_models.create', only: ['create', 'store']),
+            new Middleware('permission:brand_models.edit', only: ['edit', 'update']),
+            new Middleware('permission:brand_models.destroy', only: ['destroy']),
+        ];
+    }
+
     public function index(): View
     {
         $brandModels = BrandModel::with('brand')->orderBy('name')->paginate(15);
