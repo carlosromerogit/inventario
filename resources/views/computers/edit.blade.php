@@ -21,16 +21,16 @@
                     :selected="old('brand_model_id', $computer->brand_model_id)"
                     required />
 
-                <x-input name="serial" label="Número de serie" required
+                <x-input name="serial" label="Número de serie" autocomplete="off" required
                     :value="old('serial', $computer->serial)" />
 
-                <x-input name="hostname" label="Hostname"
+                <x-input name="hostname" label="Hostname" autocomplete="off"
                     :value="old('hostname', $computer->hostname)" />
 
-                <x-input name="processor" label="Procesador"
+                <x-input name="processor" label="Procesador" autocomplete="off"
                     :value="old('processor', $computer->processor)" />
 
-                <x-input name="ram" label="RAM"
+                <x-input name="ram" label="RAM" autocomplete="off"
                     :value="old('ram', $computer->ram)" />
 
                 <x-select name="operating_system_id" label="Sistema operativo"
@@ -53,7 +53,7 @@
                         :selected="old('employee_id', $computer->employee_id)"
                         placeholder="Sin asignar" />
 
-                   <x-input name="fixed_asset" label="Activo fijo"
+                   <x-input name="fixed_asset" label="Activo fijo" autocomplete="off"
                     :value="old('fixed_asset', $computer->fixed_asset)" />
 
                    {{-- 🔥 NUEVO: ESTADO --}}
@@ -142,10 +142,19 @@
 
             @if($computer->images->isNotEmpty())
                 <div class="grid grid-cols-6 gap-3 mb-6">
-                    @foreach($computer->images as $img)
-                        <div class="aspect-square rounded-md overflow-hidden border border-slate-200">
+                  @foreach($computer->images as $img)
+                        <div class="relative aspect-square rounded-md overflow-hidden border border-slate-200">
+
                             <img src="{{ asset('storage/' . $img->path) }}"
-                                 class="w-full h-full object-cover">
+                                class="w-full h-full object-cover">
+
+                            <button
+                                type="button"
+                                onclick="if(confirm('¿Eliminar esta imagen?')) document.getElementById('delete-image-{{ $img->id }}').submit();"
+                                class="absolute top-2 right-2 flex items-center justify-center w-7 h-7 rounded-full bg-red-600 text-white hover:bg-red-700 shadow">
+                                &times;
+                            </button>
+
                         </div>
                     @endforeach
                 </div>
@@ -189,6 +198,19 @@
       class="hidden">
     @csrf
     @method('DELETE')
+</form>
+@endforeach
+@foreach($computer->images as $img)
+<form id="delete-image-{{ $img->id }}"
+      action="{{ route('computers.images.destroy', [$computer, $img]) }}"
+      method="POST"
+      class="hidden">
+    @csrf
+    @method('DELETE')
+
+    <input type="hidden"
+           name="_redirect"
+           value="{{ url()->current() }}">
 </form>
 @endforeach
 <script>

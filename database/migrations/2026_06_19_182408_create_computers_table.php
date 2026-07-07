@@ -13,16 +13,16 @@ return new class extends Migration
     {
         Schema::create('computers', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('brand_model_id')->constrained()->restrictOnDelete();
+            $table->foreignId('brand_model_id')->constrained()->restrictOnDelete()->cascadeOnUpdate();
             $table->string('serial')->unique();
-            $table->foreignId('department_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('department_id')->nullable()->constrained()->nullOnDelete()->cascadeOnUpdate();
             $table->string('processor')->nullable();
             $table->string('ram')->nullable();
             $table->string('hostname')->nullable();
             $table->string('fixed_asset')->nullable()->unique();
-            $table->foreignId('employee_id')->nullable()->constrained()->nullOnDelete();
-            $table->foreignId('operating_system_id')->nullable()->constrained()->nullOnDelete();
-            $table->foreignId('company_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('employee_id')->nullable()->constrained()->nullOnDelete()->cascadeOnUpdate();
+            $table->foreignId('operating_system_id')->nullable()->constrained()->nullOnDelete()->cascadeOnUpdate();
+            $table->foreignId('company_id')->nullable()->constrained()->nullOnDelete()->cascadeOnUpdate();
             $table->enum('status', ['stock', 'assigned', 'faulty', 'obsolete'])->default('stock');
             $table->timestamps();
         });

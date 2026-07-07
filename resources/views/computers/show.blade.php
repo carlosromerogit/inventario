@@ -50,7 +50,7 @@
                     <div>
                         <dt class="text-xs text-slate-400 uppercase">Hostname</dt>
                         <dd class="text-sm font-mono text-slate-900">
-                            {{ $computer->hostname }}
+                            {{ $computer->hostname ??  'N/A'}}
                         </dd>
                     </div>
 
@@ -183,7 +183,7 @@
 
                 <p class="text-sm text-slate-900 font-medium">
                     {{ $computer->employee
-                        ? $computer->employee->last_name . ', ' . $computer->employee->first_name
+                        ? $computer->employee->last_name . ', ' . $computer->employee->first_name 
                         : 'Disponible en stock'
                     }}
                 </p>

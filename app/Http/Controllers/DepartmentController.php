@@ -6,16 +6,43 @@ namespace App\Http\Controllers;
 use App\Models\Department;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\View\View;
 
-class DepartmentController extends Controller
+class DepartmentController extends Controller implements HasMiddleware
 {
     //
-    public function index(): View
+    public static function middleware(): array
     {
-        $departments = Department::orderBy('name')->paginate(15);
- 
-        return view('departments.index', compact('departments'));
+        return [
+            new Middleware('permission:departments.index', only: ['index']),
+            new Middleware('permission:departments.create', only: ['create']),
+            new Middleware('permission:departments.store', only: ['store']),
+            new Middleware('permission:departments.show', only: ['show']),
+            new Middleware('permission:departments.edit', only: ['edit']),
+            new Middleware('permission:departments.update', only: ['update']),
+            new Middleware('permission:departments.destroy', only: ['destroy']),
+        ];
+    }
+
+    public function index(Request $request): View
+    {
+        $query = Department::query();
+
+    // 🔎 Único Filtro: Búsqueda por Nombre
+    if ($request->filled('search')) {
+        $query->where('name', 'like', '%' . $request->search . '%');
+    }
+
+    // Paginación limpia manteniendo la búsqueda activa al cambiar de página
+    $departments = $query->orderBy('name')
+        ->paginate(10)
+        ->withQueryString();
+
+    return view('departments.index', compact('departments'));
+
+    return view('departments.index', compact('departments'));
     }
  
     public function create(): View
@@ -57,6 +84,10 @@ class DepartmentController extends Controller
  
     public function destroy(Department $department): RedirectResponse
     {
+        if ($department->employees()->exists()) {
+    return redirect()->route('departments.index')
+        ->with('error', 'No se puede eliminar el departamento porque tiene empleados asignados.');
+}
         $department->delete();
  
         return redirect()->route('departments.index')->with('success', 'Departamento eliminado correctamente.');

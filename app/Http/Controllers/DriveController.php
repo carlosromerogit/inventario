@@ -8,10 +8,26 @@ use App\Models\DriveType;
 use App\Models\BrandModel;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\View\View;
 
-class DriveController extends Controller
+class DriveController extends Controller implements HasMiddleware
 {
+
+  public static function middleware(): array
+    {
+        return [
+            new Middleware('permission:drives.index', only: ['index']),
+            new Middleware('permission:drives.create', only: ['create']),
+            new Middleware('permission:drives.store', only: ['store']),
+            new Middleware('permission:drives.show', only: ['show']),
+            new Middleware('permission:drives.edit', only: ['edit']),
+            new Middleware('permission:drives.update', only: ['update']),
+            new Middleware('permission:drives.destroy', only: ['destroy']),
+        ];
+    }
+
     public function create(Computer $computer): View
     {
         $driveTypes = DriveType::orderBy('name')->get();

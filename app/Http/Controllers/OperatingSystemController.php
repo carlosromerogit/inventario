@@ -6,11 +6,26 @@ namespace App\Http\Controllers;
 use App\Models\OperatingSystem;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\View\View;
 
-class OperatingSystemController extends Controller
+class OperatingSystemController extends Controller implements HasMiddleware
 {
     //
+    public static function middleware(): array
+    {
+        return [
+            new Middleware('permission:operating_systems.index', only: ['index']),
+            new Middleware('permission:operating_systems.create', only: ['create']),
+            new Middleware('permission:operating_systems.store', only: ['store']),
+            new Middleware('permission:operating_systems.show', only: ['show']),
+            new Middleware('permission:operating_systems.edit', only: ['edit']),
+            new Middleware('permission:operating_systems.update', only: ['update']),
+            new Middleware('permission:operating_systems.destroy', only: ['destroy']),
+        ];
+    }
+
     public function index(): View
     {
         $operatingSystems = OperatingSystem::orderBy('name')->paginate(15);

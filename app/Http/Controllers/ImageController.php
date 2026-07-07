@@ -6,10 +6,25 @@ use App\Models\Computer;
 use App\Models\Image;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Support\Facades\Storage;
 
-class ImageController extends Controller
+class ImageController extends Controller implements HasMiddleware
 {
+    public static function middleware(): array
+    {
+        return [
+            new Middleware('permission:images.index', only: ['index']),
+            new Middleware('permission:images.create', only: ['create']),
+            new Middleware('permission:images.store', only: ['store']),
+            new Middleware('permission:images.show', only: ['show']),
+            new Middleware('permission:images.edit', only: ['edit']),
+            new Middleware('permission:images.update', only: ['update']),
+            new Middleware('permission:images.destroy', only: ['destroy']),
+        ];
+    }
+
     public function store(Request $request, Computer $computer): RedirectResponse
     {
         $request->validate([

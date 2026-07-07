@@ -14,6 +14,7 @@
                     name="first_name" 
                     label="Nombre" 
                     :value="$employee->first_name" 
+                    autocomplete="off"
                     required 
                 />
                 
@@ -21,6 +22,7 @@
                     name="last_name" 
                     label="Apellido" 
                     :value="$employee->last_name" 
+                    autocomplete="off"
                     required 
                 />
             </div>
@@ -30,7 +32,15 @@
                 name="employee_code"
                 label="Código de empleado"
                 :value="$employee->employee_code"
+                autocomplete="off"
                 placeholder="Ej. EMP-001"
+            />
+            <x-input
+                name="email"
+                label="Correo"
+                :value="$employee->email"
+                autocomplete="off"
+                placeholder="Ej. usuario@domain.com"
             />
 
             <x-select
@@ -54,6 +64,7 @@
                 name="extension"
                 label="Extensión"
                 :value="$employee->extension"
+                autocomplete="off"
                 placeholder="Sin extensión"
             />
 
@@ -62,8 +73,8 @@
                 name="work_shift"
                 label="Jornada de trabajo"
                 :options="[
-                    'morning' => 'Mañana',
-                    'afternoon' => 'Tarde',
+                    'morning/afternoon' => 'Mañana/Tarde',
+                    // 'afternoon' => 'Tarde',
                     'night' => 'Noche',
                 ]"
                 :selected="$employee->work_shift"

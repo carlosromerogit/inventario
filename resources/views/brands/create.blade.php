@@ -8,7 +8,8 @@
         <form action="{{ route('brands.store') }}" method="POST" class="space-y-5">
             @csrf
 
-            <x-input name="name" label="Nombre de la marca" required placeholder="Ej. HP" />
+            <x-input name="name" label="Nombre de la marca" required placeholder="Ej. HP" autocomplete="off"
+ />
 
             <div class="flex items-center gap-3 pt-2">
                 <x-button>Guardar marca</x-button>

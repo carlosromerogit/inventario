@@ -11,15 +11,23 @@
 
             {{-- NOMBRES --}}
             <div class="grid grid-cols-2 gap-4">
-                <x-input name="first_name" label="Nombre" required placeholder="Ej. Juan" />
-                <x-input name="last_name" label="Apellido" required placeholder="Ej. Pérez" />
+                <x-input name="first_name" label="Nombre" required placeholder="Ej. Juan" autocomplete="off"/>
+                <x-input name="last_name" label="Apellido" required placeholder="Ej. Pérez" autocomplete="off"/>
             </div>
 
             {{-- CÓDIGO EMPLEADO --}}
             <x-input
                 name="employee_code"
                 label="Código de empleado"
-                placeholder="Ej. EMP-0001"
+                placeholder="Ej. 101010"
+                autocomplete="off"
+            />
+        
+            <x-input
+                name="email"
+                label="Correo"
+                placeholder="Ej. usuario@domain.com"
+                autocomplete="off"
             />
 
             {{-- DEPARTAMENTO --}}
@@ -42,6 +50,7 @@
                 name="extension"
                 label="Extensión"
                 placeholder="Sin extensión"
+                autocomplete="off"
             />
 
             {{-- TURNO / JORNADA --}}
@@ -49,8 +58,7 @@
                 name="work_shift"
                 label="Jornada de trabajo"
                 :options="[
-                    'morning' => 'Mañana',
-                    'afternoon' => 'Tarde',
+                    'morning/afternoon' => 'Mañana/Tarde',
                     'night' => 'Noche',
                 ]"
                 placeholder="Selecciona jornada"

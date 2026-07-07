@@ -24,14 +24,18 @@ class ComputerController extends Controller implements HasMiddleware
   public static function middleware(): array
     {
         return [
-            new Middleware('permission:brand_models.index', only: ['index', 'show']),
-            new Middleware('permission:brand_models.create', only: ['create', 'store']),
-            new Middleware('permission:brand_models.edit', only: ['edit', 'update']),
-            new Middleware('permission:brand_models.destroy', only: ['destroy']),
+            new Middleware('permission:computers.index', only: ['index']),
+            new Middleware('permission:computers.create', only: ['create']),
+            new Middleware('permission:computers.store', only: ['store']),
+            new Middleware('permission:computers.show', only: ['show']),
+            new Middleware('permission:computers.edit', only: ['edit']),
+            new Middleware('permission:computers.update', only: ['update']),
+            new Middleware('permission:computers.destroy', only: ['destroy']),
         ];
     }
 
-    public function index(Request $request): View
+
+  public function index(Request $request)
 {
     $query = Computer::with([
         'brandModel.brand',
@@ -41,7 +45,7 @@ class ComputerController extends Controller implements HasMiddleware
         'company'
     ]);
 
-    // 🔎 SEARCH
+    // 🔎 SEARCH (Buscador por Serial o Nombre del Empleado)
     if ($request->filled('search')) {
         $search = $request->search;
 
@@ -54,93 +58,156 @@ class ComputerController extends Controller implements HasMiddleware
         });
     }
 
-    // 🏢 COMPANY
+    // 🏢 FILTRO: MARCA (Ya lo tenías, pero ojo: este solo filtra computadoras si tuvieras relación directa. 
+    // Si la marca la heredas a través del modelo, la forma correcta de filtrarla es la siguiente:)
+    if ($request->filled('brand_id')) {
+        $query->whereHas('brandModel', function ($q) use ($request) {
+            $q->where('brand_id', $request->brand_id);
+        });
+    }
+
+    // 💻 🔥 AQUÍ VA EL NUEVO FILTRO: MODELO DE COMPUTADORA
+    if ($request->filled('brand_model_id')) {
+        $query->where('brand_model_id', $request->brand_model_id);
+    }
+
+    // 🏢 FILTRO: EMPRESA
     if ($request->filled('company_id')) {
         $query->where('company_id', $request->company_id);
     }
 
-    // 🏢 DEPARTMENT
+    // 🏢 FILTRO: DEPARTAMENTO
     if ($request->filled('department_id')) {
         $query->where('department_id', $request->department_id);
     }
 
-    // 💻 OS
+    // 💻 FILTRO: SISTEMA OPERATIVO
     if ($request->filled('operating_system_id')) {
         $query->where('operating_system_id', $request->operating_system_id);
     }
 
-    // 📌 STATUS REAL
+    // 📌 FILTRO: ESTADO REAL
     if ($request->filled('status')) {
         $query->where('status', $request->status);
     }
 
-    
-        if ($request->filled('ram')) {
-                $query->where('ram', 'like', '%' . $request->ram . '%');
+    // 🧠 FILTRO: MEMORIA RAM
+    if ($request->filled('ram')) {
+        $query->where('ram', 'like', '%' . $request->ram . '%');
+    }
+
+    // 💾 FILTROS DE DISCOS INSTALADOS
+    if (
+        $request->filled('drive_type_id') ||
+        $request->filled('drive_brand_model_id') ||
+        $request->filled('capacity_value')
+    ) {
+        $query->whereHas('drives', function ($q) use ($request) {
+            if ($request->filled('drive_type_id')) {
+                $q->where('drive_type_id', $request->drive_type_id);
             }
 
-    // 💾 FILTROS DE DISCOS
-if (
-    $request->filled('drive_type_id') ||
-    $request->filled('drive_brand_model_id') ||
-    $request->filled('capacity_value')
-) {
+            if ($request->filled('drive_brand_model_id')) {
+                $q->where('brand_model_id', $request->drive_brand_model_id);
+            }
 
-    $query->whereHas('drives', function ($q) use ($request) {
+            if ($request->filled('capacity_value')) {
+                $capacity = match ($request->capacity_unit) {
+                    'TB' => $request->capacity_value * 1024 * 1024,
+                    'GB' => $request->capacity_value * 1024,
+                    default => $request->capacity_value,
+                };
 
-        // Tipo de disco
+                $operator = $request->capacity_operator ?? '>=';
+                $q->where('capacity_in_mb', $operator, $capacity);
+            }
+        });
+    }
+
+    // 📥 DETECTAR EXPORTACIÓN A PDF
+    if ($request->input('export') === 'pdf') {
+        $computersToExport = $query->with(['brandModel.brand', 'employee', 'company', 'operatingSystem'])
+            ->orderBy('serial')
+            ->get();
+
+        $filtrosAplicados = [];
+
+        if ($request->filled('search')) {
+            $filtrosAplicados['Búsqueda'] = '"' . $request->search . '"';
+        }
+        if ($request->filled('brand_id')) {
+            $brand = \App\Models\Brand::find($request->brand_id);
+            $filtrosAplicados['Marca'] = $brand ? $brand->name : 'Desconocida';
+        }
+        // 🔥 NUEVO: Agregar el modelo al reporte PDF si está activo
+        if ($request->filled('brand_model_id')) {
+            $bModel = \App\Models\BrandModel::with('brand')->find($request->brand_model_id);
+            $filtrosAplicados['Modelo'] = $bModel ? "{$bModel->brand->name} {$bModel->name}" : 'Desconocido';
+        }
+        if ($request->filled('ram')) {
+            $filtrosAplicados['RAM'] = $request->ram;
+        }
+        if ($request->filled('department_id')) {
+            $dept = \App\Models\Department::find($request->department_id);
+            $filtrosAplicados['Departamento'] = $dept ? $dept->name : 'Desconocido';
+        }
+        if ($request->filled('company_id')) {
+            $comp = \App\Models\Company::find($request->company_id);
+            $filtrosAplicados['Empresa'] = $comp ? $comp->name : 'Desconocida';
+        }
+        if ($request->filled('operating_system_id')) {
+            $os = \App\Models\OperatingSystem::find($request->operating_system_id);
+            $filtrosAplicados['S.O.'] = $os ? $os->name : 'Desconocido';
+        }
+        if ($request->filled('status')) {
+            $estados = ['assigned' => 'Asignado', 'stock' => 'En Stock', 'faulty' => 'Averiado', 'obsolete' => 'Obsoleto'];
+            $filtrosAplicados['Estado'] = $estados[$request->status] ?? $request->status;
+        }
         if ($request->filled('drive_type_id')) {
-            $q->where('drive_type_id', $request->drive_type_id);
+            $dType = \App\Models\DriveType::find($request->drive_type_id);
+            $filtrosAplicados['Tipo Disco'] = $dType ? $dType->name : '';
         }
-
-        // Marca / Modelo
-        if ($request->filled('drive_brand_model_id')) {
-            $q->where('brand_model_id', $request->drive_brand_model_id);
-        }
-
-
-        // Capacidad
         if ($request->filled('capacity_value')) {
-
-            $capacity = match ($request->capacity_unit) {
-                'TB' => $request->capacity_value * 1024 * 1024,
-                'GB' => $request->capacity_value * 1024,
-                default => $request->capacity_value,
-            };
-
-            $operator = $request->capacity_operator ?? '>=';
-
-            $q->where(
-                'capacity_in_mb',
-                $operator,
-                $capacity
-            );
+            $op = $request->capacity_operator ?? '>=';
+            $filtrosAplicados['Capacidad Disco'] = "{$op} {$request->capacity_value} {$request->capacity_unit}";
         }
 
-    });
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.index_computers', compact('computersToExport', 'filtrosAplicados'));
+        $pdf->setPaper('letter', 'landscape');
+        $fileName = 'reporte_computadoras_' . date('Y-m-d_H-i') . '.pdf';
+        
+        return $pdf->download($fileName);
+    }
 
-}
-
+    // 📊 EJECUTAR PAGINACIÓN DE LA VISTA WEB
     $computers = $query->orderBy('serial')
         ->paginate(15)
         ->withQueryString();
 
-    $driveTypes = DriveType::orderBy('name')->get();
+    // 📦 RECOLECCIÓN DE VARIABLES PARA LOS MENÚS DESPLEGABLES (SELECTS)
+    $driveTypes = \App\Models\DriveType::orderBy('name')->get();
 
     $driveModels = BrandModel::with('brand')
         ->where('type', 'drive')
         ->orderBy('name')
         ->get();
 
-    return view('computers.index', [
-        'computers' => $computers,
-        'brands' => \App\Models\Brand::orderBy('name')->get(),
-        'departments' => \App\Models\Department::orderBy('name')->get(),
-        'operatingSystems' => \App\Models\OperatingSystem::orderBy('name')->get(),
-        'companies' => \App\Models\Company::orderBy('name')->get(),
+    // 🔥 NUEVO: Cargar los modelos exclusivos para computadoras
+    $computerModels = BrandModel::with('brand')
+        ->where('type', 'computer')
+        ->orderBy('name')
+        ->get();
 
-        'driveTypes' => $driveTypes,
-        'driveModels' => $driveModels,
+    // RETORNAR LA VISTA CON TODOS LOS COMPONENTES
+    return view('computers.index', [
+        'computers'        => $computers,
+        'brands'           => \App\Models\Brand::orderBy('name')->get(),
+        'departments'      => \App\Models\Department::orderBy('name')->get(),
+        'operatingSystems' => \App\Models\OperatingSystem::orderBy('name')->get(),
+        'companies'        => \App\Models\Company::orderBy('name')->get(),
+        'driveTypes'       => $driveTypes,
+        'driveModels'      => $driveModels,
+        'computerModels'   => $computerModels, // 🔥 Enviado a la vista Blade
     ]);
 }
     public function create(): View
@@ -204,6 +271,15 @@ public function store(Request $request): RedirectResponse
                 'capacity_in_mb' => $this->calculateMb($driveData['cap_number'], $driveData['cap_unit']),
             ]);
         }
+
+        if ($request->hasFile('images')) {
+                foreach ($request->file('images') as $image) {
+                    $path = $image->store('computers', 'public');
+                    $computer->images()->create([
+                        'path' => $path,
+                    ]);
+                }
+            }
     });
 
     return redirect()->route('computers.index')
@@ -293,22 +369,30 @@ public function edit(Computer $computer): View
             ->with('success', 'Equipo eliminado correctamente.');
     }
 
-    private function validateComputer(Request $request, ?int $id = null): array
-    {
-        return $request->validate([
-            'brand_model_id'      => ['required', 'exists:brand_models,id'],
-            'serial'              => ['required', 'string', 'max:255', 'unique:computers,serial,' . $id],
-            'department_id'       => ['nullable', 'exists:departments,id'],
-            'company_id'          => ['nullable', 'exists:companies,id'],
-            'employee_id'         => ['nullable', 'exists:employees,id'],
-            'processor'           => ['nullable', 'string'],
-            'ram'                 => ['nullable', 'string'],
-            'hostname'                 => ['nullable', 'string'],
-            'fixed_asset'                 => ['nullable', 'string', 'unique:computers,fixed_asset,'. $id],
-            'operating_system_id' => ['nullable', 'exists:operating_systems,id'],
-            'status' => [ 'required', 'in:stock,assigned,faulty,obsolete'],
-        ]);
-    }
+   private function validateComputer(Request $request, ?int $id = null): array
+{
+    return $request->validate([
+        // 💻 Datos de la Computadora
+        'brand_model_id'      => ['required', 'exists:brand_models,id'],
+        'serial'              => ['required', 'string', 'max:255', 'unique:computers,serial,' . $id],
+        'department_id'       => ['nullable', 'exists:departments,id'],
+        'company_id'          => ['nullable', 'exists:companies,id'],
+        'employee_id'         => ['nullable', 'exists:employees,id'],
+        'processor'           => ['nullable', 'string'],
+        'ram'                 => ['nullable', 'string'],
+        'hostname'            => ['nullable', 'string'],
+        'fixed_asset'         => ['nullable', 'string', 'unique:computers,fixed_asset,' . $id],
+        'operating_system_id' => ['nullable', 'exists:operating_systems,id'],
+        'status'              => ['required', 'in:stock,assigned,faulty,obsolete'],
+
+        // 💾 Datos de los Discos Duros (Traídos directos de tu validateDrives)
+        'drives'                  => ['nullable', 'array'],
+        'drives.*.drive_type_id'  => ['required_with:drives', 'exists:drive_types,id'],
+        'drives.*.brand_model_id' => ['required_with:drives', 'exists:brand_models,id'],
+        'drives.*.cap_number'     => ['required_with:drives', 'integer', 'min:1'],
+        'drives.*.cap_unit'       => ['required_with:drives', 'in:MB,GB,TB'],
+    ]);
+}
 
     private function validateDrives(Request $request): void
     {
@@ -321,17 +405,17 @@ public function edit(Computer $computer): View
         ]);
     }
 
-    private function formData(): array
-    {
-        return [
-            BrandModel::with('brand')->where('type', 'computer')->orderBy('name')->get(),
-            Department::orderBy('name')->get(),
-            Employee::orderBy('last_name')->get(),
-            OperatingSystem::orderBy('name')->get(),
-            DriveType::orderBy('name')->get(),
-            BrandModel::with('brand')->where('type', 'drive')->orderBy('name')->get(),
-        ];
-    }
+        // private function formData(): array
+        // {
+        //     return [
+        //         BrandModel::with('brand')->where('type', 'computer')->orderBy('name')->get(),
+        //         Department::orderBy('name')->get(),
+        //         Employee::orderBy('last_name')->get(),
+        //         OperatingSystem::orderBy('name')->get(),
+        //         DriveType::orderBy('name')->get(),
+        //         BrandModel::with('brand')->where('type', 'drive')->orderBy('name')->get(),
+        //     ];
+        // }
 
     private function calculateMb(int $value, string $unit): int
     {

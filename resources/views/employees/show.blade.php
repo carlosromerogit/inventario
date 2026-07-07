@@ -34,6 +34,15 @@
                 </div>
 
                 <div>
+                    <dt class="text-xs text-slate-500">Correo</dt>
+                    <dd class="mt-0.5 text-sm font-mono text-slate-800">
+                        {{ $employee->email ?? '—' }}
+                    </dd>
+                </div>
+
+                
+
+                <div>
                     <dt class="text-xs text-slate-500">Empresa</dt>
                     <dd class="mt-0.5 text-sm text-slate-800">
                         {{ $employee->company?->name ?? '—' }}
@@ -57,11 +66,8 @@
                     <dt class="text-xs text-slate-500">Jornada de trabajo</dt>
                     <dd class="mt-0.5 text-sm text-slate-800">
                         @switch($employee->work_shift)
-                            @case('morning')
-                                Mañana
-                                @break
-                            @case('afternoon')
-                                Tarde
+                            @case('morning/afternoon')
+                                Mañana/Tarde
                                 @break
                             @case('night')
                                 Noche

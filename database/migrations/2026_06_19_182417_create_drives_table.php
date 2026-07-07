@@ -13,9 +13,9 @@ return new class extends Migration
     {
         Schema::create('drives', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('computer_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('drive_type_id')->constrained()->restrictOnDelete();
-            $table->foreignId('brand_model_id')->constrained()->restrictOnDelete();
+            $table->foreignId('computer_id')->constrained()->cascadeOnDelete()->cascadeOnUpdate();
+            $table->foreignId('drive_type_id')->constrained()->restrictOnDelete()->cascadeOnUpdate();
+            $table->foreignId('brand_model_id')->constrained()->restrictOnDelete()->cascadeOnUpdate();
 
             $table->integer('capacity_value');
             $table->string('capacity_unit');  

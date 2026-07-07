@@ -15,15 +15,19 @@ use Spatie\Permission\Models\Role;
 class UserController extends Controller implements HasMiddleware
 {
 
-     public static function middleware(): array
+    public static function middleware(): array
     {
         return [
-            new Middleware('permission:users.index', only: ['index', 'show']),
-            new Middleware('permission:users.create', only: ['create', 'store']),
-            new Middleware('permission:users.edit', only: ['edit', 'update']),
+            new Middleware('permission:users.index', only: ['index']),
+            new Middleware('permission:users.create', only: ['create']),
+            new Middleware('permission:users.store', only: ['store']),
+            new Middleware('permission:users.show', only: ['show']),
+            new Middleware('permission:users.edit', only: ['edit']),
+            new Middleware('permission:users.update', only: ['update']),
             new Middleware('permission:users.destroy', only: ['destroy']),
         ];
     }
+
 
     public function index(Request $request): View
     {
@@ -51,7 +55,7 @@ class UserController extends Controller implements HasMiddleware
         $user = User::create([
             'name' => $validated['name'],
             'username' => $validated['username'],
-            'email' => $validated['email'],
+            // 'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
         ]);
 
@@ -129,12 +133,12 @@ class UserController extends Controller implements HasMiddleware
                 'max:255',
                 Rule::unique('users')->ignore($id),
             ],
-            'email' => [
-                'required',
-                'email',
-                'max:255',
-                Rule::unique('users')->ignore($id),
-            ],
+            // 'email' => [
+            //     'required',
+            //     'email',
+            //     'max:255',
+            //     Rule::unique('users')->ignore($id),
+            // ],
             'role' => ['nullable', 'exists:roles,name'],
         ];
 

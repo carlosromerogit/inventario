@@ -13,21 +13,44 @@ use Illuminate\Validation\Rule;
 
 class BrandModelController extends Controller implements HasMiddleware
 {
-      public static function middleware(): array
+    public static function middleware(): array
     {
         return [
-            new Middleware('permission:brand_models.index', only: ['index', 'show']),
-            new Middleware('permission:brand_models.create', only: ['create', 'store']),
-            new Middleware('permission:brand_models.edit', only: ['edit', 'update']),
+            new Middleware('permission:brand_models.index', only: ['index']),
+            new Middleware('permission:brand_models.create', only: ['create']),
+            new Middleware('permission:brand_models.store', only: ['store']),
+            new Middleware('permission:brand_models.show', only: ['show']),
+            new Middleware('permission:brand_models.edit', only: ['edit']),
+            new Middleware('permission:brand_models.update', only: ['update']),
             new Middleware('permission:brand_models.destroy', only: ['destroy']),
         ];
     }
 
-    public function index(): View
+
+    public function index(Request $request): View
     {
-        $brandModels = BrandModel::with('brand')->orderBy('name')->paginate(15);
- 
-        return view('brand-models.index', compact('brandModels'));
+        // Iniciamos la consulta cargando la relación para evitar el problema de consultas N+1
+    $query = BrandModel::with('brand');
+
+    // 🔎 Filtro 1: Búsqueda por Nombre de Modelo
+    if ($request->filled('search')) {
+        $query->where('name', 'like', '%' . $request->search . '%');
+    }
+
+    // 🏷️ Filtro 2: Filtrar por Marca asociada
+    if ($request->filled('brand_id')) {
+        $query->where('brand_id', $request->input('brand_id'));
+    }
+
+    // Paginamos ordenando por el nombre del modelo
+    $brandModels = $query->orderBy('name')
+        ->paginate(10)
+        ->withQueryString();
+
+    // Cargamos todas las marcas disponibles para el selector del filtro
+    $brands = Brand::orderBy('name')->get();
+
+    return view('brand-models.index', compact('brandModels', 'brands'));
     }
  
     public function create(): View
@@ -39,12 +62,17 @@ class BrandModelController extends Controller implements HasMiddleware
  
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'brand_id' => 'required|exists:brands,id',
-            'name'     => 'required|string|max:255',
-            'type'     => 'required|in:computer,drive',
-        ]);
-
+      $validated = $request->validate([
+        'brand_id' => ['required', 'exists:brands,id'],
+        'type'     => ['required', 'in:computer,drive'],
+        'name'     => [
+            'required',
+            'string',
+            'max:255',
+            Rule::unique('brand_models')
+                ->where(fn ($query) => $query->where('brand_id', $request->brand_id)->where('type', $request->type))
+        ],
+    ]);
         BrandModel::create($validated);
 
         return redirect()->route('brand-models.index')->with('success', 'Modelo creado con éxito.');
@@ -66,18 +94,19 @@ class BrandModelController extends Controller implements HasMiddleware
  
     public function update(Request $request, BrandModel $brandModel): RedirectResponse
     {
-        $validated = $request->validate([
-            'brand_id' => ['required', 'exists:brands,id'],
-            'name' => [
-                'required',
-                'string',
-                'max:255',
-                Rule::unique('brand_models')
-                    ->where(fn ($query) => $query->where('brand_id', $request->brand_id))
-                    ->ignore($brandModel->id),
-            ],
-        ]);
- 
+      $validated = $request->validate([
+        'brand_id' => ['required', 'exists:brands,id'],
+        'type'     => ['required', 'in:computer,drive'], // 👈 ¡Agregado! No olvides validar el tipo al actualizar
+        'name'     => [
+            'required',
+            'string',
+            'max:255',
+            // 🔐 Misma regla compuesta, pero ignorando el ID actual para que te deje guardar sin cambiar el nombre
+            Rule::unique('brand_models')
+                ->where(fn ($query) => $query->where('brand_id', $request->brand_id)->where('type', $request->type))
+                ->ignore($brandModel->id),
+        ],
+    ]);
         $brandModel->update($validated);
  
         return redirect()->route('brand-models.index')->with('success', 'Modelo actualizado correctamente.');
@@ -85,8 +114,13 @@ class BrandModelController extends Controller implements HasMiddleware
  
     public function destroy(BrandModel $brandModel): RedirectResponse
     {
+        if ($brandModel->computers()->exists()) {
+            return redirect()->route('brand-models.index')->with('error', 'No se puede eliminar el modelo porque tiene computadoras asociadas en el inventario.');
+        }
+
+        // Si está libre, se elimina con seguridad
         $brandModel->delete();
- 
+
         return redirect()->route('brand-models.index')->with('success', 'Modelo eliminado correctamente.');
     }
 

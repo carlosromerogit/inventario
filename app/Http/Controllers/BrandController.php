@@ -12,21 +12,33 @@ use Illuminate\View\View;
 class BrandController extends Controller implements HasMiddleware
 {
     //
-      public static function middleware(): array
+   public static function middleware(): array
     {
         return [
-            new Middleware('permission:brands.index', only: ['index', 'show']),
-            new Middleware('permission:brands.create', only: ['create', 'store']),
-            new Middleware('permission:brands.edit', only: ['edit', 'update']),
+            new Middleware('permission:brands.index', only: ['index']),
+            new Middleware('permission:brands.create', only: ['create']),
+            new Middleware('permission:brands.store', only: ['store']),
+            new Middleware('permission:brands.show', only: ['show']),
+            new Middleware('permission:brands.edit', only: ['edit']),
+            new Middleware('permission:brands.update', only: ['update']),
             new Middleware('permission:brands.destroy', only: ['destroy']),
         ];
     }
 
+
     
-    public function index(): View
+    public function index(Request $request): View
     {
-        $brands = Brand::orderBy('name')->paginate(15);
- 
+       $query = Brand::query();
+
+        if ($request->filled('search')) {
+            $query->where('name', 'like', '%' . $request->search . '%');
+        }
+
+        $brands = $query->orderBy('name')
+            ->paginate(10)
+            ->withQueryString();
+
         return view('brands.index', compact('brands'));
     }
  
@@ -71,9 +83,17 @@ class BrandController extends Controller implements HasMiddleware
  
     public function destroy(Brand $brand): RedirectResponse
     {
+    // 🛑 Validar si la marca tiene modelos registrados usando tu relación 'brandModels'
+        if ($brand->brandModels()->exists()) {
+            return redirect()->route('brands.index')
+                ->with('error', 'No se puede eliminar la marca porque tiene modelos asociados en el sistema.');
+        }
+
+        // Si está limpia, se borra
         $brand->delete();
- 
-        return redirect()->route('brands.index')->with('success', 'Marca eliminada correctamente.');
+
+        return redirect()->route('brands.index')
+            ->with('success', 'Marca eliminada correctamente.');
     }
 
 }

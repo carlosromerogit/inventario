@@ -16,19 +16,32 @@
                 <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Buscar</label>
                 <input type="text"
                        name="search"
+                       autocomplete="off"
                        value="{{ request('search') }}"
                        placeholder="Serial o empleado..."
                        class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
             </div>
 
             {{-- MARCA --}}
-            <div>
+            {{-- <div>
                 <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Marca</label>
                 <select name="brand_id" class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
                     <option value="">Todas</option>
                     @foreach($brands as $brand)
                         <option value="{{ $brand->id }}" {{ request('brand_id') == $brand->id ? 'selected' : '' }}>
                             {{ $brand->name }}
+                        </option>
+                    @endforeach
+                </select>
+            </div> --}}
+
+            <div>
+                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Marca/Modelo</label>
+                <select name="brand_model_id" class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
+                    <option value="">Todos</option>
+                    @foreach($computerModels as $cModel)
+                        <option value="{{ $cModel->id }}" {{ request('brand_model_id') == $cModel->id ? 'selected' : '' }}>
+                            {{ $cModel->brand->name }} — {{ $cModel->name }}
                         </option>
                     @endforeach
                 </select>
@@ -40,9 +53,23 @@
 
                 <input type="text"
                     name="ram"
+                    autocomplete="off"
                     value="{{ request('ram') }}"
                     placeholder="Ej: 8GB, 16GB"
                     class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
+            </div>
+
+             {{-- EMPRESA --}}
+            <div>
+                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Empresa</label>
+                <select name="company_id" class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
+                    <option value="">Todas</option>
+                    @foreach($companies as $company)
+                        <option value="{{ $company->id }}" {{ request('company_id') == $company->id ? 'selected' : '' }}>
+                            {{ $company->name }}
+                        </option>
+                    @endforeach
+                </select>
             </div>
 
             {{-- DEPARTAMENTO --}}
@@ -58,18 +85,7 @@
                 </select>
             </div>
 
-            {{-- EMPRESA --}}
-            <div>
-                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Empresa</label>
-                <select name="company_id" class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
-                    <option value="">Todas</option>
-                    @foreach($companies as $company)
-                        <option value="{{ $company->id }}" {{ request('company_id') == $company->id ? 'selected' : '' }}>
-                            {{ $company->name }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
+           
 
             {{-- SISTEMA OPERATIVO --}}
             <div>
@@ -147,6 +163,8 @@
 
             </select>
         </div>
+
+        
 
        <div>
     <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">
@@ -233,10 +251,20 @@
         {{ $computers->total() }} equipos encontrados
     </p>
 
-    <a href="{{ route('computers.create') }}"
-       class="inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500">
-        + Nuevo equipo
+    <div class="flex items-center gap-2">
+        {{-- 🔥 NUEVO: Botón de Exportar (Mantiene los filtros activos de la URL) --}}
+    <a href="{{ route('computers.index', array_merge(request()->all(), ['export' => 'pdf'])) }}"
+    class="inline-flex items-center rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-500">
+        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+        Exportar PDF
     </a>
+        <a href="{{ route('computers.create') }}"
+           class="inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500">
+            + Nuevo equipo
+        </a>
+    </div>
 </div>
 
 {{-- ===================== TABLA ===================== --}}

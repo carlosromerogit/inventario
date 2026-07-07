@@ -7,10 +7,26 @@ use App\Models\Employee;
 use App\Models\Company;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\View\View;
-
-class EmployeeController extends Controller
+use Illuminate\Validation\Rule;
+class EmployeeController extends Controller implements HasMiddleware
 {
+    public static function middleware(): array
+    {
+        return [
+            new Middleware('permission:employees.index', only: ['index']),
+            new Middleware('permission:employees.create', only: ['create']),
+            new Middleware('permission:employees.store', only: ['store']),
+            new Middleware('permission:employees.show', only: ['show']),
+            new Middleware('permission:employees.edit', only: ['edit']),
+            new Middleware('permission:employees.update', only: ['update']),
+            new Middleware('permission:employees.destroy', only: ['destroy']),
+        ];
+    }
+
+
     public function index(Request $request): View
     {
         $query = Employee::with(['department', 'company', 'computers']);
@@ -55,7 +71,7 @@ class EmployeeController extends Controller
         }
 
         $employees = $query->orderBy('last_name')
-            ->paginate(15)
+            ->paginate(10)
             ->withQueryString();
 
         $departments = Department::orderBy('name')->get();
@@ -78,12 +94,14 @@ class EmployeeController extends Controller
             'first_name'    => ['required', 'string', 'max:255'],
             'last_name'     => ['required', 'string', 'max:255'],
             'extension'     => ['nullable', 'string', 'max:255'],
-            'department_id' => ['nullable', 'exists:departments,id'],
-            'company_id'    => ['nullable', 'exists:companies,id'],
+            'email'         => ['nullable', 'email', 'unique:employees,email', 'max:255'],
 
-            // NUEVOS CAMPOS
-            'employee_code' => ['nullable', 'string', 'max:50', 'unique:employees,employee_code'],
-            'work_shift'    => ['nullable', 'in:morning,afternoon,night'],
+            'department_id' => ['required', 'exists:departments,id'],
+            'company_id'    => ['required', 'exists:companies,id'],
+            
+            'employee_code' => ['required', 'string', 'unique:employees,employee_code', 'max:10'],
+
+            'work_shift'    => ['nullable', 'in:morning/afternoon,night'],
         ], [
             'employee_code.unique' => 'El código ya está registrado.',
             'employee_code.required' => 'El código es obligatorio.',
@@ -117,11 +135,18 @@ class EmployeeController extends Controller
             'first_name'    => ['required', 'string', 'max:255'],
             'last_name'     => ['required', 'string', 'max:255'],
             'extension'     => ['nullable', 'string', 'max:255'],
-            'department_id' => ['nullable', 'exists:departments,id'],
-            'company_id'    => ['nullable', 'exists:companies,id'],
 
-            'employee_code' => ['nullable', 'string', 'max:50', 'unique:employees,employee_code,' . $employee->id],
-            'work_shift'    => ['nullable', 'in:morning,afternoon,night'],
+    // 🏢 Siguen siendo requeridos en la edición
+            'department_id' => ['required', 'exists:departments,id'],
+            'company_id'    => ['required', 'exists:companies,id'],
+            'email'         => ['nullable', 'email', 'max:255', Rule::unique('employees', 'email')->ignore($employee->id)],
+            'employee_code' => [
+                'required', 
+                'string', 
+                'max:100', 
+                Rule::unique('employees', 'employee_code')->ignore($employee->id)
+            ],
+            'work_shift'    => ['nullable', 'in:morning/afternoon,night'],
         ]);
 
         $employee->update($validated);

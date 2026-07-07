@@ -15,10 +15,11 @@ return new class extends Migration
             $table->id();
             $table->string('first_name');
             $table->string('last_name');
+            $table->string('email')->nullable()->unique();
             $table->string('extension')->nullable();
-            $table->foreignId('department_id')->nullable()->constrained()->nullOnDelete();
-            $table->foreignId('company_id')->nullable()->constrained()->nullOnDelete();
-            $table->string('employee_code')->nullable()->unique();
+            $table->foreignId('department_id')->constrained()->restrictOnDelete()->cascadeOnUpdate();
+            $table->foreignId('company_id')->constrained()->restrictOnDelete()->cascadeOnUpdate();
+            $table->string('employee_code')->unique();
             $table->string('work_shift')->nullable();
             $table->timestamps();
         });

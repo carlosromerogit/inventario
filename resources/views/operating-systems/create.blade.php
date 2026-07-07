@@ -8,7 +8,7 @@
         <form action="{{ route('operating-systems.store') }}" method="POST" class="space-y-5">
             @csrf
 
-            <x-input name="name" label="Nombre del sistema operativo" required placeholder="Ej. Windows 11 Pro" />
+            <x-input name="name" label="Nombre del sistema operativo" required placeholder="Ej. Windows 11 Pro" autocomplete="off"/>
 
             <div class="flex items-center gap-3 pt-2">
                 <x-button>Guardar sistema operativo</x-button>

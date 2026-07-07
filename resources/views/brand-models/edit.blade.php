@@ -23,6 +23,7 @@
                     name="name" 
                     label="Nombre del modelo" 
                     :value="old('name', $brandModel->name)" 
+                    autocomplete="off"
                     required />
 
                 <div>

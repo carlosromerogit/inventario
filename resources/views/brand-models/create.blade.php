@@ -26,6 +26,7 @@
                     label="Nombre del modelo" 
                     :value="old('name')" 
                     placeholder="Ej. OptiPlex 7080 o A400 SSD" 
+                    autocomplete="off"
                     required />
                     @error('name')
                         <p class="mt-1.5 text-xs text-red-600 font-medium">{{ $message }}</p>

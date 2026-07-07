@@ -8,9 +8,11 @@
         <form action="{{ route('companies.store') }}" method="POST" class="space-y-5">
             @csrf
 
-            <x-input name="name" label="Nombre de la empresa" required placeholder="Ej. ACME Corp" />
+            <x-input name="name" label="Nombre de la empresa" required placeholder="Nombre de la empresa" autocomplete="off"/>
 
-            <x-input name="address" label="Dirección (opcional)" placeholder="Ej. Santo Domingo" />
+            <x-input name="RNC" label="RNC" required placeholder="Escribir RNC de la empresa" autocomplete="off"/>
+            
+            <x-input name="address" label="Dirección (opcional)" placeholder="Ej. Santo Domingo" autocomplete="off" />
 
             <div class="flex items-center gap-3 pt-2">
                 <x-button>Guardar empresa</x-button>

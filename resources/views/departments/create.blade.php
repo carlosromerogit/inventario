@@ -8,7 +8,7 @@
         <form action="{{ route('departments.store') }}" method="POST" class="space-y-5">
             @csrf
 
-            <x-input name="name" label="Nombre del departamento" required placeholder="Ej. Contabilidad" />
+            <x-input name="name" label="Nombre del departamento" required placeholder="Ej. Contabilidad" autocomplete="off"/>
 
             <div class="flex items-center gap-3 pt-2">
                 <x-button>Guardar departamento</x-button>

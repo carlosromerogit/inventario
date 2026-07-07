@@ -4,13 +4,52 @@
 @section('header', 'Marcas')
 
 @section('content')
+
+    {{-- 🔎 SECCIÓN DE FILTRO ÚNICO --}}
+    <div class="bg-white rounded-lg border border-slate-200 shadow-sm p-4 mb-6">
+        <form action="{{ route('brands.index') }}" method="GET" class="flex flex-col sm:flex-row items-end gap-4">
+            
+            {{-- BUSCAR --}}
+            <div class="flex-1 w-full">
+                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Buscar Marca</label>
+                <input type="text" name="search" autocomplete="off" value="{{ request('search') }}" placeholder="Escribe el nombre de la marca (Ej. Dell, HP)..." class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
+            </div>
+
+            {{-- BOTONES --}}
+            <div class="flex justify-end gap-2 w-full sm:w-auto">
+                @if(request()->filled('search'))
+                    <a href="{{ route('brands.index') }}" class="rounded-md bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-200 text-center">
+                        Limpiar
+                    </a>
+                @endif
+                <button type="submit" class="rounded-md bg-slate-800 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700 w-full sm:w-auto">
+                    Buscar
+                </button>
+            </div>
+            
+        </form>
+    </div>
+@if (session('error'))
+    <div class="mb-4 p-4 text-sm text-red-700 bg-red-50 rounded-lg border border-red-200 shadow-sm" role="alert">
+        <span class="font-semibold">¡Atención!</span> {{ session('error') }}
+    </div>
+@endif
+
+@if (session('success'))
+    <div class="mb-4 p-4 text-sm text-green-700 bg-green-50 rounded-lg border border-green-200 shadow-sm" role="alert">
+        <span class="font-semibold">Éxito:</span> {{ session('success') }}
+    </div>
+@endif
+    {{-- 📊 HEADER --}}
     <div class="flex items-center justify-between mb-6">
-        <p class="text-sm text-slate-500">{{ $brands->total() }} marcas registradas</p>
+        <p class="text-sm text-slate-500">{{ $brands->total() }} marcas encontradas</p>
+        
         <x-button-secondary :href="route('brands.create')" class="!bg-indigo-600 !text-white !ring-0 hover:!bg-indigo-500">
             + Nueva marca
         </x-button-secondary>
     </div>
 
+    {{-- 📋 TABLA --}}
     <div class="bg-white rounded-lg border border-slate-200 overflow-hidden">
         <table class="min-w-full divide-y divide-slate-200">
             <thead class="bg-slate-50">
@@ -39,7 +78,7 @@
                 @empty
                     <tr>
                         <td colspan="2" class="px-6 py-10 text-center text-sm text-slate-400">
-                            No hay marcas registradas todavía.
+                            No se encontraron marcas con ese nombre.
                         </td>
                     </tr>
                 @endforelse

@@ -16,12 +16,12 @@
 
             <div class="grid grid-cols-2 gap-5">
 
-                <x-input name="serial" label="Serial" required />
+                <x-input name="serial" label="Serial" autocomplete="off" required />
                 <x-select name="brand_model_id" label="Marca / Modelo" :options="$brandModels->pluck('name','id')" required />
-                    <x-input name="hostname" label="Hostname"/>
+                <x-input name="hostname" label="Hostname" autocomplete="off"/>
 
-                <x-input name="processor" label="Procesador" />
-                <x-input name="ram" label="RAM" />
+                <x-input name="processor" label="Procesador" autocomplete="off" />
+                <x-input name="ram" label="RAM" autocomplete="off" />
 
                 <x-select name="operating_system_id" label="Sistema operativo"
                           :options="$operatingSystems->pluck('name','id')" />
@@ -36,7 +36,7 @@
                           <x-select name="employee_id" label="Empleado"
                           :options="$employees->mapWithKeys(fn($e)=>[$e->id => $e->first_name.' '.$e->last_name])" />
                           
-                        <x-input name="fixed_asset" label="Activo fijo"/>
+                        <x-input name="fixed_asset" label="Activo fijo" autocomplete="off"/>
                           
                           <x-select 
                         name="status" 
@@ -83,7 +83,7 @@
                 </button>
             </div>
 
-            <input type="file" id="images-input" name="images[]" multiple class="hidden"
+            <input type="file" id="images-input" name="images[]" multiple class="hidden" autocomplete="off"
                    onchange="handleImageSelect(this)">
 
             <div id="image-preview-container" class="grid grid-cols-6 gap-3 hidden"></div>

@@ -22,6 +22,7 @@
                     name="name"
                     label="Nombre completo"
                     :value="old('name')"
+                    autocomplete="off"
                     required
                 />
 
@@ -29,16 +30,17 @@
                     name="username"
                     label="Usuario"
                     :value="old('username')"
+                    autocomplete="off"
                     required
                 />
 
-                <x-input
+                {{-- <x-input
                     type="email"
                     name="email"
                     label="Correo electrónico"
                     :value="old('email')"
                     required
-                />
+                /> --}}
 
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1">

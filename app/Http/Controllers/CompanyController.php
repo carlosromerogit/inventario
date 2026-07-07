@@ -7,24 +7,40 @@ use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class CompanyController extends Controller implements HasMiddleware
 {
 
     //
-  public static function middleware(): array
+    public static function middleware(): array
     {
         return [
-            new Middleware('permission:componies.index', only: ['index', 'show']),
-            new Middleware('permission:componies.create', only: ['create', 'store']),
-            new Middleware('permission:componies.edit', only: ['edit', 'update']),
-            new Middleware('permission:componies.destroy', only: ['destroy']),
+            new Middleware('permission:companies.index', only: ['index']),
+            new Middleware('permission:companies.create', only: ['create']),
+            new Middleware('permission:companies.store', only: ['store']),
+            new Middleware('permission:companies.show', only: ['show']),
+            new Middleware('permission:companies.edit', only: ['edit']),
+            new Middleware('permission:companies.update', only: ['update']),
+            new Middleware('permission:companies.destroy', only: ['destroy']),
         ];
     }
-    public function index(): View
+
+    public function index(Request $request): View
     {
-        $companies = Company::orderBy('name')->paginate(15);
+        $query = Company::query();
+
+   if ($request->filled('search')) {
+        $query->where(function ($q) use ($request) {
+            $q->where('name', 'like', '%' . $request->search . '%')
+              ->orWhere('RNC', 'like', '%' . $request->search . '%');
+        });
+    }
+
+        $companies = $query->orderBy('name')
+            ->paginate(10)
+            ->withQueryString();
 
         return view('companies.index', compact('companies'));
     }
@@ -37,9 +53,9 @@ class CompanyController extends Controller implements HasMiddleware
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'name'    => ['required', 'string', 'max:255', 'unique:companies,name'],
-            'rnc'     => ['nullable', 'string', 'max:50'],
-            'address' => ['nullable', 'string', 'max:255'],
+            'name'    => ['required', 'string', 'unique:companies,name', 'max:255'], // 🔐 Único
+            'address' => ['nullable', 'string', 'max:500'],
+            'RNC'     => ['nullable', 'string', 'max:50'], // O la longitud típica de tu país (ej: 9 u 11 dígitos)
         ]);
 
         Company::create($validated);
@@ -64,9 +80,9 @@ class CompanyController extends Controller implements HasMiddleware
     public function update(Request $request, Company $company): RedirectResponse
     {
         $validated = $request->validate([
-            'name'    => ['required', 'string', 'max:255', 'unique:companies,name,' . $company->id],
-            'rnc'     => ['nullable', 'string', 'max:50'],
-            'address' => ['nullable', 'string', 'max:255'],
+            'name'    => ['required', 'string', 'max:255', Rule::unique('companies', 'name')->ignore($company->id)],
+            'address' => ['nullable', 'string', 'max:500'],
+            'RNC'     => ['nullable', 'string', 'max:50'],
         ]);
 
         $company->update($validated);
@@ -78,6 +94,10 @@ class CompanyController extends Controller implements HasMiddleware
 
     public function destroy(Company $company): RedirectResponse
     {
+       if ($company->employees()->exists()) {
+        return redirect()->route('companies.index')
+            ->with('error', 'No se puede eliminar la empresa porque tiene empleados asignados.');
+    }
         $company->delete();
 
         return redirect()

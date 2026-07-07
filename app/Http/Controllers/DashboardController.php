@@ -6,10 +6,19 @@ use App\Models\Computer;
 use App\Models\Drive;
 use App\Models\Department;
 use App\Models\OperatingSystem;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\View\View;
 
-class DashboardController extends Controller
+class DashboardController extends Controller implements HasMiddleware
 {
+    public static function middleware(): array
+    {
+        return [
+            new Middleware('permission:dashboard.index', only: ['index']),
+        ];
+    }
+
     public function index(): View
     {
         $totalComputers = Computer::count();

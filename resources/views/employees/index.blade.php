@@ -5,7 +5,6 @@
 
 @section('content')
 
-    {{-- FILTROS --}}
 {{-- FILTROS --}}
 <div class="bg-white rounded-lg border border-slate-200 shadow-sm p-4 mb-6">
     <form action="{{ route('employees.index') }}" method="GET" class="space-y-4">
@@ -19,6 +18,7 @@
                 </label>
                 <input type="text"
                        name="search"
+                       autocomplete="off"
                        value="{{ request('search') }}"
                        placeholder="Nombre o apellido..."
                        class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
@@ -33,25 +33,11 @@
                        name="employee_code"
                        value="{{ request('employee_code') }}"
                        placeholder="Ej. EMP-001"
+                       autocomplete="off"
                        class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
             </div>
 
-            {{-- DEPARTAMENTO --}}
-            <div>
-                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">
-                    Departamento
-                </label>
-                <select name="department_id"
-                    class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
-                    <option value="">Todos</option>
-                    @foreach($departments as $dept)
-                        <option value="{{ $dept->id }}"
-                            {{ request('department_id') == $dept->id ? 'selected' : '' }}>
-                            {{ $dept->name }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
+       
 
             {{-- EMPRESA --}}
             <div>
@@ -70,6 +56,23 @@
                 </select>
             </div>
 
+                 {{-- DEPARTAMENTO --}}
+            <div>
+                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">
+                    Departamento
+                </label>
+                <select name="department_id"
+                    class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
+                    <option value="">Todos</option>
+                    @foreach($departments as $dept)
+                        <option value="{{ $dept->id }}"
+                            {{ request('department_id') == $dept->id ? 'selected' : '' }}>
+                            {{ $dept->name }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
             {{-- JORNADA (WORK SHIFT) --}}
             <div>
                 <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">
@@ -78,12 +81,12 @@
                 <select name="work_shift"
                     class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
                     <option value="">Todas</option>
-                    <option value="morning" {{ request('work_shift') == 'morning' ? 'selected' : '' }}>
-                        Mañana
+                    <option value="morning/afternoon" {{ request('work_shift') == 'morning/afternoon' ? 'selected' : '' }}>
+                        Mañana/Tarde
                     </option>
-                    <option value="afternoon" {{ request('work_shift') == 'afternoon' ? 'selected' : '' }}>
+                    {{-- <option value="afternoon" {{ request('work_shift') == 'afternoon' ? 'selected' : '' }}>
                         Tarde
-                    </option>
+                    </option> --}}
                     <option value="night" {{ request('work_shift') == 'night' ? 'selected' : '' }}>
                         Noche
                     </option>
@@ -132,8 +135,11 @@
             <thead class="bg-slate-50">
                 <tr>
                     <th class="px-6 py-3 text-left text-xs font-semibold uppercase">Nombre</th>
-                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase">Departamento</th>
+                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase">Código</th>
+                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase">Correo</th>
+                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase">Extensión</th>
                     <th class="px-6 py-3 text-left text-xs font-semibold uppercase">Empresa</th>
+                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase">Departamento</th>
                     <th class="px-6 py-3 text-left text-xs font-semibold uppercase">Equipos</th>
                     <th class="px-6 py-3 text-right text-xs font-semibold uppercase">Acciones</th>
                 </tr>
@@ -152,15 +158,28 @@
                             </a>
                         </td>
 
-                        {{-- DEPARTAMENTO --}}
                         <td class="px-6 py-4 text-sm text-slate-600">
-                            {{ $employee->department?->name ?? '—' }}
+                            {{ $employee->employee_code ?? '—' }}
+                        </td>
+
+                        <td class="px-6 py-4 text-sm text-slate-600">
+                            {{ $employee->email ?? '—' }}
+                        </td>
+
+                        <td class="px-6 py-4 text-sm text-slate-600">
+                            {{ $employee->extension ?? '—' }}
                         </td>
 
                         {{-- EMPRESA --}}
                         <td class="px-6 py-4 text-sm text-slate-600">
                             {{ $employee->company?->name ?? '—' }}
                         </td>
+
+                        {{-- DEPARTAMENTO --}}
+                        <td class="px-6 py-4 text-sm text-slate-600">
+                            {{ $employee->department?->name ?? '—' }}
+                        </td>
+
 
                         {{-- EQUIPOS --}}
                         <td class="px-6 py-4 text-sm">

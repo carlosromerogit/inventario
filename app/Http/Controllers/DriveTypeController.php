@@ -5,12 +5,27 @@ namespace App\Http\Controllers;
 use App\Models\DriveType;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\View\View;
 
 
-class DriveTypeController extends Controller
+class DriveTypeController extends Controller implements HasMiddleware
 {
     //
+      public static function middleware(): array
+    {
+        return [
+            new Middleware('permission:drive_types.index', only: ['index']),
+            new Middleware('permission:drive_types.create', only: ['create']),
+            new Middleware('permission:drive_types.store', only: ['store']),
+            new Middleware('permission:drive_types.show', only: ['show']),
+            new Middleware('permission:drive_types.edit', only: ['edit']),
+            new Middleware('permission:drive_types.update', only: ['update']),
+            new Middleware('permission:drive_types.destroy', only: ['destroy']),
+        ];
+    }
+
     public function index(): View
     {
         $driveTypes = DriveType::orderBy('name')->paginate(15);
