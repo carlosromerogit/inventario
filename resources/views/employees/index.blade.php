@@ -40,7 +40,7 @@
        
 
             {{-- EMPRESA --}}
-            <div>
+            {{-- <div>
                 <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">
                     Empresa
                 </label>
@@ -54,10 +54,10 @@
                         </option>
                     @endforeach
                 </select>
-            </div>
+            </div> --}}
 
                  {{-- DEPARTAMENTO --}}
-            <div>
+            {{-- <div>
                 <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">
                     Departamento
                 </label>
@@ -71,8 +71,31 @@
                         </option>
                     @endforeach
                 </select>
-            </div>
+            </div> --}}
 
+            <div>
+    <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Empresa / Departamento</label>
+    <select name="company_or_department" class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500 bg-white">
+        <option value="">Todos los registros</option>
+        
+        @foreach($companies as $company)
+            <optgroup label="{{ $company->name }}">
+                <option value="company_{{ $company->id }}" {{ request('company_or_department') == 'company_' . $company->id ? 'selected' : '' }}>
+                    {{ $company->name }} (Toda la Empresa)
+                </option>
+                
+                @foreach($company->departments as $dept)
+                    @php
+                        $currentValue = 'comp_' . $company->id . '_dept_' . $dept->id;
+                    @endphp
+                    <option value="{{ $currentValue }}" {{ request('company_or_department') == $currentValue ? 'selected' : '' }}>
+                        {{ $company->name }} — {{ $dept->name }}
+                    </option>
+                @endforeach
+            </optgroup>
+        @endforeach
+    </select>
+</div>
             {{-- JORNADA (WORK SHIFT) --}}
             <div>
                 <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">
@@ -98,7 +121,7 @@
         {{-- BOTONES --}}
         <div class="flex justify-end gap-2 pt-2 border-t border-slate-100">
 
-            @if(request()->anyFilled(['search', 'employee_code', 'department_id', 'company_id', 'work_shift']))
+            @if(request()->anyFilled(['search', 'employee_code','company_or_department', 'department_id', 'company_id', 'work_shift']))
                 <a href="{{ route('employees.index') }}"
                    class="rounded-md bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-200">
                     Limpiar

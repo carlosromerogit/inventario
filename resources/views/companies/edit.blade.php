@@ -11,9 +11,37 @@
 
             <x-input name="name" label="Nombre de la empresa" :value="$company->name" autocomplete="off" required />
 
-            <x-input name="name" label="RNC de la empresa" :value="$company->RNC" autocomplete="off" required />
+            {{-- 🛠️ Corregido name="name" por name="RNC" --}}
+            <x-input name="RNC" label="RNC de la empresa" :value="$company->RNC" autocomplete="off" required />
 
             <x-input name="address" label="Dirección (opcional)" :value="$company->address" autocomplete="off" />
+
+            <div class="space-y-2">
+                <label class="block text-sm font-medium text-slate-700">Departamentos que pertenecen a esta empresa</label>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto p-3 border border-slate-200 rounded-md bg-slate-50">
+                    @forelse($departments as $dept)
+                        @php
+                            // Comprobamos si el checkbox debe estar marcado (por old input o por relación de BD)
+                            $isChecked = is_array(old('departments')) 
+                                ? in_array($dept->id, old('departments')) 
+                                : $company->departments->contains($dept->id);
+                        @endphp
+                        <label class="flex items-center text-sm text-slate-600 space-x-2.5 p-1.5 rounded hover:bg-slate-100 cursor-pointer transition-colors">
+                            <input type="checkbox" name="departments[]" value="{{ $dept->id }}"
+                                class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 w-4 h-4"
+                                {{ $isChecked ? 'checked' : '' }}>
+                            <span class="select-none text-slate-700 font-medium">{{ $dept->name }}</span>
+                        </label>
+                    @empty
+                        <div class="col-span-2 p-2 text-xs text-slate-400 italic text-center">
+                            No hay departamentos registrados en el sistema.
+                        </div>
+                    @endforelse
+                </div>
+                @error('departments')
+                    <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
+                @enderror
+            </div>
 
             <div class="flex items-center gap-3 pt-2">
                 <x-button>Guardar cambios</x-button>

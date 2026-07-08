@@ -9,6 +9,7 @@ use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
+use App\Models\Department;
 
 class CompanyController extends Controller implements HasMiddleware
 {
@@ -47,24 +48,34 @@ class CompanyController extends Controller implements HasMiddleware
 
     public function create(): View
     {
-        return view('companies.create');
+        // Obtenemos todos los departamentos para que el usuario pueda seleccionarlos
+        $departments = Department::orderBy('name')->get();
+        
+        return view('companies.create', compact('departments'));
     }
 
-    public function store(Request $request): RedirectResponse
-    {
-        $validated = $request->validate([
-            'name'    => ['required', 'string', 'unique:companies,name', 'max:255'], // 🔐 Único
-            'address' => ['nullable', 'string', 'max:500'],
-            'RNC'     => ['nullable', 'string', 'max:50'], // O la longitud típica de tu país (ej: 9 u 11 dígitos)
-        ]);
+public function store(Request $request): RedirectResponse
+{
+    $validated = $request->validate([
+        'name'          => ['required', 'string', 'unique:companies,name', 'max:255'],
+        'address'       => ['nullable', 'string', 'max:500'],
+        'RNC'           => ['nullable', 'string', 'max:50'],
+        'departments'   => ['nullable', 'array'], // 👈 Validamos que llegue un array de IDs
+        'departments.*' => ['exists:departments,id'], // Cada ID debe existir
+    ]);
 
-        Company::create($validated);
+    // Creamos la empresa
+    $company = Company::create($validated);
 
-        return redirect()
-            ->route('companies.index')
-            ->with('success', 'Empresa creada correctamente.');
+    // 🔗 Sincronizamos los departamentos en la tabla pivote
+    if ($request->has('departments')) {
+        $company->departments()->sync($request->departments);
     }
 
+    return redirect()
+        ->route('companies.index')
+        ->with('success', 'Empresa creada correctamente.');
+}
     public function show(Company $company): View
     {
         $company->load(['employees', 'computers']);
@@ -72,26 +83,34 @@ class CompanyController extends Controller implements HasMiddleware
         return view('companies.show', compact('company'));
     }
 
-    public function edit(Company $company): View
-    {
-        return view('companies.edit', compact('company'));
-    }
+public function edit(Company $company): View
+{
+    $departments = Department::orderBy('name')->get();
+    
+    // Cargamos la relación actual para saber cuáles tiene asignados
+    $company->load('departments');
 
-    public function update(Request $request, Company $company): RedirectResponse
-    {
-        $validated = $request->validate([
-            'name'    => ['required', 'string', 'max:255', Rule::unique('companies', 'name')->ignore($company->id)],
-            'address' => ['nullable', 'string', 'max:500'],
-            'RNC'     => ['nullable', 'string', 'max:50'],
-        ]);
+    return view('companies.edit', compact('company', 'departments'));
+}
+   public function update(Request $request, Company $company): RedirectResponse
+{
+    $validated = $request->validate([
+        'name'          => ['required', 'string', 'max:255', Rule::unique('companies', 'name')->ignore($company->id)],
+        'address'       => ['nullable', 'string', 'max:500'],
+        'RNC'           => ['nullable', 'string', 'max:50'],
+        'departments'   => ['nullable', 'array'], // 👈 Validamos el array
+        'departments.*' => ['exists:departments,id'],
+    ]);
 
-        $company->update($validated);
+    $company->update($validated);
 
-        return redirect()
-            ->route('companies.index')
-            ->with('success', 'Empresa actualizada correctamente.');
-    }
+    // 🔄 Sincronizamos (esto añade los nuevos y remueve los que se desmarcaron)
+    $company->departments()->sync($request->input('departments', []));
 
+    return redirect()
+        ->route('companies.index')
+        ->with('success', 'Empresa actualizada correctamente.');
+}
     public function destroy(Company $company): RedirectResponse
     {
        if ($company->employees()->exists()) {

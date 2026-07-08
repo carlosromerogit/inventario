@@ -28,57 +28,68 @@ class EmployeeController extends Controller implements HasMiddleware
 
 
     public function index(Request $request): View
-    {
-        $query = Employee::with(['department', 'company', 'computers']);
+{
+    $query = Employee::with(['department', 'company', 'computers']);
 
-        // 🔎 búsqueda
-      if ($request->filled('search')) {
-    $search = $request->input('search');
+    // 🔎 Búsqueda por nombre o apellido
+    if ($request->filled('search')) {
+        $search = $request->input('search');
+        $query->where(function ($q) use ($search) {
+            $q->where('first_name', 'like', "%{$search}%")
+              ->orWhere('last_name', 'like', "%{$search}%");
+        });
+    }
 
-    $query->where(function ($q) use ($search) {
-        $q->where('first_name', 'like', "%{$search}%")
-          ->orWhere('last_name', 'like', "%{$search}%");
-    });
-}
-                if ($request->filled('work_shift')) {
-            $query->where('work_shift', $request->input('work_shift'));
-        }
-        if ($request->filled('employee_code')) {
-            $query->where('employee_code', 'like', '%' . $request->employee_code . '%');
-        }
-        // 🏢 departamento
-        if ($request->filled('department_id')) {
-            $query->where('department_id', $request->input('department_id'));
-        }
+    // 🆔 Código de empleado
+    if ($request->filled('employee_code')) {
+        $query->where('employee_code', 'like', '%' . $request->employee_code . '%');
+    }
 
-        // 🏭 empresa
-        if ($request->filled('company_id')) {
-            $query->where('company_id', $request->input('company_id'));
-        }
+    // 🕒 Turno de trabajo
+    if ($request->filled('work_shift')) {
+        $query->where('work_shift', $request->input('work_shift'));
+    }
 
-        // 💻 equipos
-        if ($request->filled('has_computer')) {
-            if ($request->input('has_computer') === 'yes') {
-                $query->has('computers');
-            } elseif ($request->input('has_computer') === 'no') {
-                $query->doesntHave('computers');
+    // ⚙️ FILTRO UNIFICADO (EMPRESA / DEPARTAMENTO)
+    if ($request->filled('company_or_department')) {
+        $filterValue = $request->input('company_or_department');
+
+        if (str_starts_with($filterValue, 'company_')) {
+            // Caso 1: Se seleccionó "Toda la Empresa" -> company_X
+            $companyId = str_replace('company_', '', $filterValue);
+            $query->where('company_id', $companyId);
+            
+        } elseif (str_starts_with($filterValue, 'comp_')) {
+            // Caso 2: Se seleccionó una combinación -> comp_X_dept_Y
+            // Parseamos los IDs usando expresiones regulares o explode
+            if (preg_match('/comp_(\d+)_dept_(\d+)/', $filterValue, $matches)) {
+                $companyId = $matches[1];
+                $departmentId = $matches[2];
+                
+                $query->where('company_id', $companyId)
+                      ->where('department_id', $departmentId);
             }
         }
-
-        // 🕒 turno (NUEVO)
-        if ($request->filled('work_shift')) {
-            $query->where('work_shift', $request->input('work_shift'));
-        }
-
-        $employees = $query->orderBy('last_name')
-            ->paginate(10)
-            ->withQueryString();
-
-        $departments = Department::orderBy('name')->get();
-        $companies    = Company::orderBy('name')->get();
-
-        return view('employees.index', compact('employees', 'departments', 'companies'));
     }
+
+    // 💻 Equipos asignados
+    if ($request->filled('has_computer')) {
+        if ($request->input('has_computer') === 'yes') {
+            $query->has('computers');
+        } elseif ($request->input('has_computer') === 'no') {
+            $query->doesntHave('computers');
+        }
+    }
+
+    $employees = $query->orderBy('last_name')
+        ->paginate(10)
+        ->withQueryString();
+
+    // Importante: Cargamos las empresas con sus departamentos para el <select>
+    $companies = Company::with('departments')->orderBy('name')->get();
+
+    return view('employees.index', compact('employees', 'companies'));
+}
 
     public function create(): View
     {
@@ -88,31 +99,38 @@ class EmployeeController extends Controller implements HasMiddleware
         return view('employees.create', compact('departments', 'companies'));
     }
 
-    public function store(Request $request): RedirectResponse
-    {
-        $validated = $request->validate([
-            'first_name'    => ['required', 'string', 'max:255'],
-            'last_name'     => ['required', 'string', 'max:255'],
-            'extension'     => ['nullable', 'string', 'max:255'],
-            'email'         => ['nullable', 'email', 'unique:employees,email', 'max:255'],
-
-            'department_id' => ['required', 'exists:departments,id'],
-            'company_id'    => ['required', 'exists:companies,id'],
-            
-            'employee_code' => ['required', 'string', 'unique:employees,employee_code', 'max:10'],
-
-            'work_shift'    => ['nullable', 'in:morning/afternoon,night'],
-        ], [
-            'employee_code.unique' => 'El código ya está registrado.',
-            'employee_code.required' => 'El código es obligatorio.',
-        ]);
-
-        Employee::create($validated);
-
-        return redirect()
-            ->route('employees.index')
-            ->with('success', 'Empleado creado correctamente.');
+    public function store(Request $request)
+{
+    // ⚙️ Separar el valor combinado si viene en el request
+    if ($request->filled('company_and_department')) {
+        $parts = explode('-', $request->input('company_and_department'));
+        if (count($parts) === 2) {
+            $request->merge([
+                'company_id' => $parts[0],
+                'department_id' => $parts[1]
+            ]);
+        }
     }
+
+        // A partir de aquí tu validación actual funcionará de manera transparente:
+    $validated = $request->validate([
+        'first_name' => 'required|string|max:255',
+        'last_name' => 'required|string|max:255',
+        'company_id' => 'required|exists:companies,id',
+        'department_id' => 'required|exists:departments,id',
+        
+        // 💡 AGREGA ESTO (puedes usar 'nullable' si en tu formulario es opcional, 
+        // pero lee abajo si la base de datos te obliga a que sea obligatorio)
+        'employee_code' => 'required|string|max:50|unique:employees,employee_code', 
+        'email' => 'nullable|email|max:255',
+        'extension' => 'nullable|string',
+        'work_shift' => 'nullable|string',
+    ]);
+
+    Employee::create($validated);
+
+    return redirect()->route('employees.index')->with('success', 'Empleado creado con éxito.');
+}
 
     public function show(Employee $employee): View
     {
@@ -129,32 +147,31 @@ class EmployeeController extends Controller implements HasMiddleware
         return view('employees.edit', compact('employee', 'departments', 'companies'));
     }
 
-    public function update(Request $request, Employee $employee): RedirectResponse
-    {
-        $validated = $request->validate([
-            'first_name'    => ['required', 'string', 'max:255'],
-            'last_name'     => ['required', 'string', 'max:255'],
-            'extension'     => ['nullable', 'string', 'max:255'],
-
-    // 🏢 Siguen siendo requeridos en la edición
-            'department_id' => ['required', 'exists:departments,id'],
-            'company_id'    => ['required', 'exists:companies,id'],
-            'email'         => ['nullable', 'email', 'max:255', Rule::unique('employees', 'email')->ignore($employee->id)],
-            'employee_code' => [
-                'required', 
-                'string', 
-                'max:100', 
-                Rule::unique('employees', 'employee_code')->ignore($employee->id)
-            ],
-            'work_shift'    => ['nullable', 'in:morning/afternoon,night'],
-        ]);
-
-        $employee->update($validated);
-
-        return redirect()
-            ->route('employees.index')
-            ->with('success', 'Empleado actualizado correctamente.');
+    public function update(Request $request, Employee $employee)
+{
+    // ⚙️ Descomponer el string 'company_id-department_id'
+    if ($request->filled('company_and_department')) {
+        $parts = explode('-', $request->input('company_and_department'));
+        if (count($parts) === 2) {
+            $request->merge([
+                'company_id' => $parts[0],
+                'department_id' => $parts[1]
+            ]);
+        }
     }
+
+    $validated = $request->validate([
+        'first_name' => 'required|string|max:255',
+        'last_name' => 'required|string|max:255',
+        'company_id' => 'required|exists:companies,id',
+        'department_id' => 'required|exists:departments,id',
+        // ... el resto de tus validaciones normales
+    ]);
+
+    $employee->update($validated);
+
+    return redirect()->route('employees.show', $employee)->with('success', 'Empleado actualizado con éxito.');
+}
 
     public function destroy(Employee $employee): RedirectResponse
     {

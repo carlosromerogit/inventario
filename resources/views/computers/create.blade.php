@@ -17,21 +17,71 @@
             <div class="grid grid-cols-2 gap-5">
 
                 <x-input name="serial" label="Serial" autocomplete="off" required />
-                <x-select name="brand_model_id" label="Marca / Modelo" :options="$brandModels->pluck('name','id')" required />
-                <x-input name="hostname" label="Hostname" autocomplete="off"/>
+
+                {{-- <x-select name="brand_model_id" label="Marca / Modelo" :options="$brandModels->pluck('name','id')" required /> --}}
+                    
+              {{-- 💻 SELECT: MARCA / MODELO (CREAR) --}}
+<div>
+    <label class="block text-sm font-medium text-slate-700 mb-1">Marca / Modelo *</label>
+    <select name="brand_model_id" required 
+        class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500 bg-white @error('brand_model_id') border-red-500 @enderror">
+        <option value="">Selecciona el modelo del equipo</option>
+        
+        {{-- Agrupamos la colección de modelos por el nombre de su marca --}}
+        @foreach($brandModels->groupBy('brand.name') as $brandName => $models)
+            <optgroup label="{{ $brandName }}">
+                @foreach($models as $model)
+                    <option value="{{ $model->id }}" {{ old('brand_model_id') == $model->id ? 'selected' : '' }}>
+                        {{ $brandName }} — {{ $model->name }}
+                    </option>
+                @endforeach
+            </optgroup>
+        @endforeach
+    </select>
+    @error('brand_model_id')
+        <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
+    @enderror
+</div>
+                    <x-input name="hostname" label="Hostname" autocomplete="off"/>
 
                 <x-input name="processor" label="Procesador" autocomplete="off" />
                 <x-input name="ram" label="RAM" autocomplete="off" />
 
                 <x-select name="operating_system_id" label="Sistema operativo"
                           :options="$operatingSystems->pluck('name','id')" />
-
+{{-- 
                 <x-select name="department_id" label="Departamento"
                           :options="$departments->pluck('name','id')" />
 
                 <x-select name="company_id" label="Empresa"
-                          :options="$companies->pluck('name','id')" />
-
+                          :options="$companies->pluck('name','id')" /> --}}
+{{-- 🏭 UNIFICADO: EMPRESA / DEPARTAMENTO --}}
+<div>
+    <label class="block text-sm font-medium text-slate-700 mb-1">Empresa / Departamento del Equipo *</label>
+    <select name="company_and_department" required 
+        class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500 bg-white @error('company_id') border-red-500 @enderror @error('department_id') border-red-500 @enderror">
+        <option value="">Selecciona la ubicación y el área</option>
+        
+        @foreach($companies as $company)
+            <optgroup label="{{ $company->name }}">
+                @foreach($company->departments as $dept)
+                    @php
+                        $combinedValue = $company->id . '-' . $dept->id;
+                    @endphp
+                    <option value="{{ $combinedValue }}" {{ old('company_and_department') == $combinedValue ? 'selected' : '' }}>
+                        {{ $company->name }} — {{ $dept->name }}
+                    </option>
+                @endforeach
+            </optgroup>
+        @endforeach
+    </select>
+    @error('company_id')
+        <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
+    @enderror
+    @error('department_id')
+        <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
+    @enderror
+</div>
                           
                           <x-select name="employee_id" label="Empleado"
                           :options="$employees->mapWithKeys(fn($e)=>[$e->id => $e->first_name.' '.$e->last_name])" />

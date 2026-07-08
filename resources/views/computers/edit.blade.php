@@ -16,10 +16,36 @@
 
             <div class="grid grid-cols-2 gap-5">
 
-                <x-select name="brand_model_id" label="Marca / Modelo"
+                {{-- 💻 SELECT: MARCA / MODELO (EDITAR) --}}
+<div>
+    <label class="block text-sm font-medium text-slate-700 mb-1">Marca / Modelo *</label>
+    <select name="brand_model_id" required 
+        class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500 bg-white @error('brand_model_id') border-red-500 @enderror">
+        <option value="">Selecciona el modelo del equipo</option>
+        
+        @foreach($brandModels->groupBy('brand.name') as $brandName => $models)
+            <optgroup label="{{ $brandName }}">
+                @foreach($models as $model)
+                    @php
+                        $isSelected = old('brand_model_id') 
+                            ? (old('brand_model_id') == $model->id) 
+                            : ($computer->brand_model_id == $model->id);
+                    @endphp
+                    <option value="{{ $model->id }}" {{ $isSelected ? 'selected' : '' }}>
+                        {{ $brandName }} — {{ $model->name }}
+                    </option>
+                @endforeach
+            </optgroup>
+        @endforeach
+    </select>
+    @error('brand_model_id')
+        <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
+    @enderror
+</div>
+                {{-- <x-select name="brand_model_id" label="Marca / Modelo"
                     :options="$brandModels->mapWithKeys(fn($m) => [$m->id => $m->brand->name . ' — ' . $m->name])"
                     :selected="old('brand_model_id', $computer->brand_model_id)"
-                    required />
+                    required /> --}}
 
                 <x-input name="serial" label="Número de serie" autocomplete="off" required
                     :value="old('serial', $computer->serial)" />
@@ -37,14 +63,46 @@
                     :options="$operatingSystems->pluck('name', 'id')"
                     :selected="old('operating_system_id', $computer->operating_system_id)" />
 
-                <x-select name="department_id" label="Departamento"
+
+                    {{-- 🏭 UNIFICADO: EMPRESA / DEPARTAMENTO --}}
+<div>
+    <label class="block text-sm font-medium text-slate-700 mb-1">Empresa / Departamento del Equipo *</label>
+    <select name="company_and_department" required 
+        class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500 bg-white @error('company_id') border-red-500 @enderror @error('department_id') border-red-500 @enderror">
+        <option value="">Selecciona la ubicación y el área</option>
+        
+        @foreach($companies as $company)
+            <optgroup label="{{ $company->name }}">
+                @foreach($company->departments as $dept)
+                    @php
+                        $combinedValue = $company->id . '-' . $dept->id;
+                        $isSelected = old('company_and_department') 
+                            ? (old('company_and_department') == $combinedValue)
+                            : ($computer->company_id == $company->id && $computer->department_id == $dept->id);
+                    @endphp
+                    <option value="{{ $combinedValue }}" {{ $isSelected ? 'selected' : '' }}>
+                        {{ $company->name }} — {{ $dept->name }}
+                    </option>
+                @endforeach
+            </optgroup>
+        @endforeach
+    </select>
+    @error('company_id')
+        <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
+    @enderror
+    @error('department_id')
+        <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
+    @enderror
+</div>
+
+                {{-- <x-select name="department_id" label="Departamento"
                     :options="$departments->pluck('name', 'id')"
                     :selected="old('department_id', $computer->department_id)" />
 
-                {{-- 🔥 NUEVO: EMPRESA --}}
+      
                 <x-select name="company_id" label="Empresa"
                     :options="$companies->pluck('name', 'id')"
-                    :selected="old('company_id', $computer->company_id)" />
+                    :selected="old('company_id', $computer->company_id)" /> --}}
 
              
 

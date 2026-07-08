@@ -57,19 +57,61 @@ class ComputerController extends Controller implements HasMiddleware
               });
         });
     }
+    if ($request->filled('brand_or_model')) {
+    $value = $request->input('brand_or_model');
 
-    // 🏢 FILTRO: MARCA (Ya lo tenías, pero ojo: este solo filtra computadoras si tuvieras relación directa. 
-    // Si la marca la heredas a través del modelo, la forma correcta de filtrarla es la siguiente:)
-    if ($request->filled('brand_id')) {
-        $query->whereHas('brandModel', function ($q) use ($request) {
-            $q->where('brand_id', $request->brand_id);
+    // 1. Si el usuario seleccionó una marca en general (Ej: brand_2)
+    if (str_starts_with($value, 'brand_')) {
+        $brandId = str_replace('brand_', '', $value);
+        
+        $query->whereHas('brandModel', function ($q) use ($brandId) {
+            $q->where('brand_id', $brandId);
         });
+    } 
+    // 2. Si el usuario seleccionó un modelo específico (Ej: model_5)
+    elseif (str_starts_with($value, 'model_')) {
+        $modelId = str_replace('model_', '', $value);
+        
+        $query->where('brand_model_id', $modelId);
     }
+}
 
-    // 💻 🔥 AQUÍ VA EL NUEVO FILTRO: MODELO DE COMPUTADORA
-    if ($request->filled('brand_model_id')) {
-        $query->where('brand_model_id', $request->brand_model_id);
+    // // 🏢 FILTRO: MARCA (Ya lo tenías, pero ojo: este solo filtra computadoras si tuvieras relación directa. 
+    // // Si la marca la heredas a través del modelo, la forma correcta de filtrarla es la siguiente:)
+    // if ($request->filled('brand_id')) {
+    //     $query->whereHas('brandModel', function ($q) use ($request) {
+    //         $q->where('brand_id', $request->brand_id);
+    //     });
+    // }
+
+    // // 💻 🔥 AQUÍ VA EL NUEVO FILTRO: MODELO DE COMPUTADORA
+    // if ($request->filled('brand_model_id')) {
+    //     $query->where('brand_model_id', $request->brand_model_id);
+    // }
+
+    if ($request->filled('company_or_department')) {
+    $value = $request->input('company_or_department');
+
+    // 1. Filtrar por toda la Empresa
+    if (str_starts_with($value, 'company_')) {
+        $companyId = str_replace('company_', '', $value);
+        
+        $query->where('company_id', $companyId);
+    } 
+    // 2. Filtrar por un Departamento específico de una Empresa específica
+    elseif (str_starts_with($value, 'comp_')) {
+        // Expresión regular para extraer los IDs de "comp_{X}_dept_{Y}"
+        preg_match('/comp_(\d+)_dept_(\d+)/', $value, $matches);
+        
+        if (count($matches) === 3) {
+            $companyId = $matches[1];
+            $departmentId = $matches[2];
+
+            $query->where('company_id', $companyId)
+                  ->where('department_id', $departmentId);
+        }
     }
+}
 
     // 🏢 FILTRO: EMPRESA
     if ($request->filled('company_id')) {
@@ -256,10 +298,12 @@ public function show(Computer $computer): View
 }
 public function store(Request $request): RedirectResponse
 {
+    // Parsar el string antes de pasar a la validación
+    $this->parseCompanyAndDepartment($request);
+
     $validated = $this->validateComputer($request);
 
     DB::transaction(function () use ($request, $validated) {
-
         $computer = Computer::create($validated);
 
         foreach ($request->drives ?? [] as $driveData) {
@@ -273,13 +317,13 @@ public function store(Request $request): RedirectResponse
         }
 
         if ($request->hasFile('images')) {
-                foreach ($request->file('images') as $image) {
-                    $path = $image->store('computers', 'public');
-                    $computer->images()->create([
-                        'path' => $path,
-                    ]);
-                }
+            foreach ($request->file('images') as $image) {
+                $path = $image->store('computers', 'public');
+                $computer->images()->create([
+                    'path' => $path,
+                ]);
             }
+        }
     });
 
     return redirect()->route('computers.index')
@@ -313,16 +357,16 @@ public function edit(Computer $computer): View
 
     public function update(Request $request, Computer $computer): RedirectResponse
 {
+    // Parsar el string antes de pasar a la validación
+    $this->parseCompanyAndDepartment($request);
+
     $validated = $this->validateComputer($request, $computer->id);
 
     $this->validateDrives($request);
 
     DB::transaction(function () use ($request, $validated, $computer) {
-
-        // 🔄 actualizar equipo
         $computer->update($validated);
 
-        // 💾 DRIVES (evitar duplicados si esto no es lo que quieres)
         if ($request->filled('drives')) {
             foreach ($request->input('drives', []) as $driveData) {
                 $computer->drives()->create([
@@ -330,19 +374,14 @@ public function edit(Computer $computer): View
                     'brand_model_id'  => $driveData['brand_model_id'],
                     'capacity_value'  => $driveData['cap_number'],
                     'capacity_unit'   => $driveData['cap_unit'],
-                    'capacity_in_mb'  => $this->calculateMb(
-                        $driveData['cap_number'],
-                        $driveData['cap_unit']
-                    ),
+                    'capacity_in_mb'  => $this->calculateMb($driveData['cap_number'], $driveData['cap_unit']),
                 ]);
             }
         }
 
-        // 🖼️ IMÁGENES
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $file) {
                 $path = $file->store('computers/' . $computer->id, 'public');
-
                 Image::create([
                     'path' => $path,
                     'computer_id' => $computer->id
@@ -355,7 +394,6 @@ public function edit(Computer $computer): View
         ->route('computers.show', $computer)
         ->with('success', 'Equipo actualizado correctamente.');
 }
-
     public function destroy(Computer $computer): RedirectResponse
     {
         foreach ($computer->images as $image) {
@@ -369,14 +407,17 @@ public function edit(Computer $computer): View
             ->with('success', 'Equipo eliminado correctamente.');
     }
 
-   private function validateComputer(Request $request, ?int $id = null): array
+
+private function validateComputer(Request $request, ?int $id = null): array
 {
     return $request->validate([
-        // 💻 Datos de la Computadora
         'brand_model_id'      => ['required', 'exists:brand_models,id'],
         'serial'              => ['required', 'string', 'max:255', 'unique:computers,serial,' . $id],
-        'department_id'       => ['nullable', 'exists:departments,id'],
-        'company_id'          => ['nullable', 'exists:companies,id'],
+        
+        // Modificados a requeridos si el formulario los exige obligatorios
+        'department_id'       => ['required', 'exists:departments,id'],
+        'company_id'          => ['required', 'exists:companies,id'],
+        
         'employee_id'         => ['nullable', 'exists:employees,id'],
         'processor'           => ['nullable', 'string'],
         'ram'                 => ['nullable', 'string'],
@@ -385,7 +426,6 @@ public function edit(Computer $computer): View
         'operating_system_id' => ['nullable', 'exists:operating_systems,id'],
         'status'              => ['required', 'in:stock,assigned,faulty,obsolete'],
 
-        // 💾 Datos de los Discos Duros (Traídos directos de tu validateDrives)
         'drives'                  => ['nullable', 'array'],
         'drives.*.drive_type_id'  => ['required_with:drives', 'exists:drive_types,id'],
         'drives.*.brand_model_id' => ['required_with:drives', 'exists:brand_models,id'],
@@ -425,4 +465,18 @@ public function edit(Computer $computer): View
             default => $value,
         };
     }
+
+    // ⚙️ AGREGAR ESTE NUEVO MÉTODO PRIVADO AL FINAL DEL CONTROLADOR
+private function parseCompanyAndDepartment(Request $request): void
+{
+    if ($request->filled('company_and_department')) {
+        $parts = explode('-', $request->input('company_and_department'));
+        if (count($parts) === 2) {
+            $request->merge([
+                'company_id' => $parts[0],
+                'department_id' => $parts[1]
+            ]);
+        }
+    }
+}
 }

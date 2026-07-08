@@ -35,7 +35,7 @@
                 </select>
             </div> --}}
 
-            <div>
+            {{-- <div>
                 <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Marca/Modelo</label>
                 <select name="brand_model_id" class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
                     <option value="">Todos</option>
@@ -45,7 +45,29 @@
                         </option>
                     @endforeach
                 </select>
-            </div>
+            </div> --}}
+            <div>
+    <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Marca/Modelo</label>
+    <select name="brand_or_model" class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
+        <option value="">Todos</option>
+        
+        <optgroup label="Marcas (General)">
+            @foreach($brands as $brand)
+                <option value="brand_{{ $brand->id }}" {{ request('brand_or_model') == 'brand_' . $brand->id ? 'selected' : '' }}>
+                    {{ $brand->name }} (Todas)
+                </option>
+            @endforeach
+        </optgroup>
+
+        <optgroup label="Modelos Específicos">
+            @foreach($computerModels as $cModel)
+                <option value="model_{{ $cModel->id }}" {{ request('brand_or_model') == 'model_' . $cModel->id ? 'selected' : '' }}>
+                    {{ $cModel->brand->name }} — {{ $cModel->name }}
+                </option>
+            @endforeach
+        </optgroup>
+    </select>
+</div>
             <div>
                 <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">
                     RAM
@@ -60,7 +82,7 @@
             </div>
 
              {{-- EMPRESA --}}
-            <div>
+            {{-- <div>
                 <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Empresa</label>
                 <select name="company_id" class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
                     <option value="">Todas</option>
@@ -70,10 +92,10 @@
                         </option>
                     @endforeach
                 </select>
-            </div>
+            </div> --}}
 
             {{-- DEPARTAMENTO --}}
-            <div>
+            {{-- <div>
                 <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Departamento</label>
                 <select name="department_id" class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
                     <option value="">Todos</option>
@@ -83,9 +105,31 @@
                         </option>
                     @endforeach
                 </select>
-            </div>
+            </div> --}}
 
-           
+           <div>
+    <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Empresa / Departamento</label>
+    <select name="company_or_department" class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
+        <option value="">Todos</option>
+        
+        @foreach($companies as $company)
+            <optgroup label="{{ $company->name }}">
+                <option value="company_{{ $company->id }}" {{ request('company_or_department') == 'company_' . $company->id ? 'selected' : '' }}>
+                    {{ $company->name }} (Toda la Empresa)
+                </option>
+                @foreach($company->departments as $dept)
+                    @php
+                        // Creamos el string del valor actual para compararlo limpiamente
+                        $currentValue = 'comp_' . $company->id . '_dept_' . $dept->id;
+                    @endphp
+                    <option value="{{ $currentValue }}" {{ request('company_or_department') == $currentValue ? 'selected' : '' }}>
+                        {{ $company->name }} — {{ $dept->name }}
+                    </option>
+                @endforeach
+            </optgroup>
+        @endforeach
+    </select>
+</div>
 
             {{-- SISTEMA OPERATIVO --}}
             <div>
