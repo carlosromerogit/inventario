@@ -466,17 +466,32 @@ private function validateComputer(Request $request, ?int $id = null): array
         };
     }
 
-    // ⚙️ AGREGAR ESTE NUEVO MÉTODO PRIVADO AL FINAL DEL CONTROLADOR
-private function parseCompanyAndDepartment(Request $request): void
-{
-    if ($request->filled('company_and_department')) {
-        $parts = explode('-', $request->input('company_and_department'));
-        if (count($parts) === 2) {
-            $request->merge([
-                'company_id' => $parts[0],
-                'department_id' => $parts[1]
-            ]);
+    private function parseCompanyAndDepartment(Request $request): void
+    {
+        if ($request->filled('company_and_department')) {
+            $parts = explode('-', $request->input('company_and_department'));
+            if (count($parts) === 2) {
+                $request->merge([
+                    'company_id' => $parts[0],
+                    'department_id' => $parts[1]
+                ]);
+            }
         }
     }
-}
-}
+
+    public function getEmployeesByLocation(Request $request)
+    {
+        [$companyId, $departmentId] = explode('-', $request->query('location', '-'));
+
+        if (!$companyId || !$departmentId) {
+            return response()->json([]);
+        }
+
+        $employees = Employee::where('company_id', $companyId)
+            ->where('department_id', $departmentId)
+            ->select('id', 'first_name', 'last_name')
+            ->get();
+
+        return response()->json($employees);
+    }
+    }

@@ -56,36 +56,55 @@
                 <x-select name="company_id" label="Empresa"
                           :options="$companies->pluck('name','id')" /> --}}
 {{-- 🏭 UNIFICADO: EMPRESA / DEPARTAMENTO --}}
+{{-- 1. Selector de UBICACIÓN (Empresa / Departamento) --}}
 <div>
     <label class="block text-sm font-medium text-slate-700 mb-1">Empresa / Departamento del Equipo *</label>
     <select name="company_and_department" required 
-        class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500 bg-white @error('company_id') border-red-500 @enderror @error('department_id') border-red-500 @enderror">
+        class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500 bg-white">
         <option value="">Selecciona la ubicación y el área</option>
-        
         @foreach($companies as $company)
             <optgroup label="{{ $company->name }}">
                 @foreach($company->departments as $dept)
-                    @php
-                        $combinedValue = $company->id . '-' . $dept->id;
-                    @endphp
-                    <option value="{{ $combinedValue }}" {{ old('company_and_department') == $combinedValue ? 'selected' : '' }}>
+                    <option value="{{ $company->id }}-{{ $dept->id }}" {{ old('company_and_department') == ($company->id . '-' . $dept->id) ? 'selected' : '' }}>
                         {{ $company->name }} — {{ $dept->name }}
                     </option>
                 @endforeach
             </optgroup>
         @endforeach
     </select>
-    @error('company_id')
-        <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
-    @enderror
-    @error('department_id')
-        <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
-    @enderror
+</div>
+
+{{-- 2. Selector de EMPLEADO (Inicia vacío y espera a la Ubicación) --}}
+<div>
+    <label class="block text-sm font-medium text-slate-700 mb-1">Empleado asignado</label>
+    <select name="employee_id" id="employee_select"
+        class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm bg-white focus:border-indigo-500 focus:ring-indigo-500">
+        <option value="">Selecciona primero una Empresa / Departamento</option>
+    </select>
 </div>
                           
-                          <x-select name="employee_id" label="Empleado"
-                          :options="$employees->mapWithKeys(fn($e)=>[$e->id => $e->first_name.' '.$e->last_name])" />
+                          {{-- <x-select name="employee_id" label="Empleado"
+                          :options="$employees->mapWithKeys(fn($e)=>[$e->id => $e->first_name.' '.$e->last_name])" /> --}}
                           
+                          {{-- Select de Empleado (Ejemplo nativo para asegurar compatibilidad con JS) --}}
+<div>
+    <label class="block text-sm font-medium text-slate-700 mb-1">Empleado asignado</label>
+    <select name="employee_id" id="employee_select"
+        class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm bg-white">
+        <option value="">Selecciona primero una Empresa / Departamento</option>
+        
+        {{-- Si es el EDIT, puedes dejar cargados los empleados de la ubicación actual --}}
+        @if(isset($computer) && $computer->employee)
+            @foreach($employees as $e)
+                        @if($e->company_id == $computer->company_id && $e->department_id == $computer->department_id)
+                <option value="{{ $e->id }}" {{ $computer->employee_id == $e->id ? 'selected' : '' }}>
+                    {{ $e->last_name }}, {{ $e->first_name }}
+                </option>
+            @endif {{-- ← Aquí: Cambiado de @endendif a @endif --}}
+            @endforeach
+        @endif
+    </select>
+</div>
                         <x-input name="fixed_asset" label="Activo fijo" autocomplete="off"/>
                           
                           <x-select 
@@ -332,6 +351,79 @@ function syncFiles() {
 
     document.getElementById('images-input').files = dt.files;
 }
+/* ===========================================================
+|  REACTIVIDAD LÓGICA: EMPLEADO <=> ESTADO
+=========================================================== */
+document.addEventListener('DOMContentLoaded', function () {
+    const employeeSelect = document.querySelector('select[name="employee_id"]');
+    const statusSelect = document.querySelector('select[name="status"]');
+
+    if (employeeSelect && statusSelect) {
+        
+        // 1. Cuando cambia el selector de EMPLEADO
+        employeeSelect.addEventListener('change', function () {
+            if (this.value !== "") {
+                // Si seleccionan un empleado, forzamos el estado a 'assigned'
+                statusSelect.value = 'assigned';
+            } else {
+                // Si quitan el empleado, lo ideal es regresarlo a 'stock'
+                if (statusSelect.value === 'assigned') {
+                    statusSelect.value = 'stock';
+                }
+            }
+        });
+
+        // 2. Cuando cambia el selector de ESTADO
+        statusSelect.addEventListener('change', function () {
+            if (this.value === 'stock' || this.value === 'faulty' || this.value === 'obsolete') {
+                // Si se va a stock, averiado u obsoleto, no puede tener dueño asignado
+                if (this.value === 'stock') {
+                    employeeSelect.value = "";
+                }
+            } else if (this.value === 'assigned') {
+                // Si cambian manualmente el estado a 'Asignado' pero no hay empleado,
+                // podemos abrir el select o dejar la alerta visual para que lo elijan
+                if (employeeSelect.value === "") {
+                    employeeSelect.focus();
+                }
+            }
+        });
+    }
+});
+
+/* ===========================================================
+|  SELECTS DEPENDIENTES: EMPRESA/DEP => EMPLEADOS
+=========================================================== */
+document.addEventListener('DOMContentLoaded', function () {
+    const locationSelect = document.querySelector('select[name="company_and_department"]');
+    const employeeSelect = document.getElementById('employee_select');
+
+    if (locationSelect && employeeSelect) {
+        locationSelect.addEventListener('change', function () {
+            const combinedValue = this.value; // Ej: "1-3"
+
+            if (!combinedValue) {
+                employeeSelect.innerHTML = '<option value="">Selecciona primero una Empresa / Departamento</option>';
+                return;
+            }
+
+            // Petición al servidor para traer los empleados de esa empresa-departamento
+            fetch(`/api/employees-by-location?location=${combinedValue}`)
+                .then(response => response.json())
+                .then(employees => {
+                    employeeSelect.innerHTML = '<option value="">Sin asignar</option>';
+                    
+                    employees.forEach(employee => {
+                        const option = document.createElement('option');
+                        option.value = employee.id;
+                        option.textContent = `${employee.last_name}, ${employee.first_name}`;
+                        employeeSelect.appendChild(option);
+                    });
+                })
+                .catch(error => console.error('Error cargando empleados:', error));
+        });
+    }
+});
 </script>
 
 @endsection

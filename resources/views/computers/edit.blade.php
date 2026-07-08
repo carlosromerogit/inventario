@@ -104,12 +104,41 @@
                     :options="$companies->pluck('name', 'id')"
                     :selected="old('company_id', $computer->company_id)" /> --}}
 
-             
+ {{-- 👥 SELECT: EMPLEADO (Solución Definitiva para EDIT) --}}
+<div>
+    <label class="block text-sm font-medium text-slate-700 mb-1">Empleado asignado</label>
+    <select name="employee_id" id="employee_select"
+        class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm bg-white focus:border-indigo-500 focus:ring-indigo-500">
+        <option value="">Sin asignar</option>
+        
+        {{-- 1. Si el equipo ya tiene un empleado asignado, lo mostramos y seleccionamos por defecto --}}
+        @if($computer->employee)
+            <option value="{{ $computer->employee_id }}" selected>
+                {{ $computer->employee->last_name }}, {{ $computer->employee->first_name }}
+            </option>
+        @endif
 
-                    <x-select name="employee_id" label="Empleado asignado"
+        {{-- 2. Listamos el resto de los empleados que pertenecen a la MISMA empresa y departamento --}}
+        @foreach($employees as $e)
+            @php
+                // Determinamos la empresa y departamento a comparar (priorizando lo que venga de old() si hubo un error de validación)
+                $currentCompanyId = old('company_id', $computer->company_id);
+                $currentDeptId = old('department_id', $computer->department_id);
+            @endphp
+
+            {{-- Filtramos para mostrar solo compañeros de la misma área, evitando duplicar al empleado seleccionado arriba --}}
+            @if($e->id !== $computer->employee_id && $e->company_id == $currentCompanyId && $e->department_id == $currentDeptId)
+                <option value="{{ $e->id }}" {{ old('employee_id') == $e->id ? 'selected' : '' }}>
+                    {{ $e->last_name }}, {{ $e->first_name }}
+                </option>
+            @endif
+        @endforeach
+    </select>
+</div>
+                    {{-- <x-select name="employee_id" label="Empleado asignado"
                         :options="$employees->mapWithKeys(fn($e) => [$e->id => $e->last_name . ', ' . $e->first_name])"
                         :selected="old('employee_id', $computer->employee_id)"
-                        placeholder="Sin asignar" />
+                        placeholder="Sin asignar" /> --}}
 
                    <x-input name="fixed_asset" label="Activo fijo" autocomplete="off"
                     :value="old('fixed_asset', $computer->fixed_asset)" />
@@ -464,5 +493,110 @@ function syncFiles() {
 
     document.getElementById('images-input').files = dt.files;
 }
+/* ===========================================================
+|  REACTIVIDAD LÓGICA: EMPLEADO <=> ESTADO (EDICIÓN)
+=========================================================== */
+document.addEventListener('DOMContentLoaded', function () {
+    const employeeSelect = document.querySelector('select[name="employee_id"]');
+    const statusSelect = document.querySelector('select[name="status"]');
+
+    if (employeeSelect && statusSelect) {
+        
+        // 1. Cuando cambia el selector de EMPLEADO
+        employeeSelect.addEventListener('change', function () {
+            if (this.value !== "") {
+                // Si seleccionan un empleado, forzamos el estado a 'assigned'
+                statusSelect.value = 'assigned';
+            } else {
+                // Si quitan el empleado y estaba como 'assigned', lo regresamos a 'stock'
+                if (statusSelect.value === 'assigned') {
+                    statusSelect.value = 'stock';
+                }
+            }
+        });
+
+        // 2. Cuando cambia el selector de ESTADO
+        statusSelect.addEventListener('change', function () {
+            if (this.value === 'stock' || this.value === 'faulty' || this.value === 'obsolete') {
+                // Si se cambia a stock, averiado u obsoleto, limpiamos el empleado
+                if (this.value === 'stock') {
+                    employeeSelect.value = "";
+                }
+            } else if (this.value === 'assigned') {
+                // Si cambian a 'Asignado' pero no hay empleado, le da el foco al select
+                if (employeeSelect.value === "") {
+                    employeeSelect.focus();
+                }
+            }
+        });
+    }
+});
+/* ===========================================================
+|  LOGICA DE EDICIÓN: SELECTS DEPENDIENTES + ESTADOS
+=========================================================== */
+document.addEventListener('DOMContentLoaded', function () {
+    const locationSelect = document.querySelector('select[name="company_and_department"]');
+    const employeeSelect = document.getElementById('employee_select');
+    const statusSelect = document.querySelector('select[name="status"]');
+
+    if (locationSelect && employeeSelect && statusSelect) {
+        
+        // 1. ESCUCHA CUANDO CAMBIA LA EMPRESA / DEPARTAMENTO
+        locationSelect.addEventListener('change', function () {
+            const combinedValue = this.value; // Ej: "1-3"
+
+            if (!combinedValue) {
+                employeeSelect.innerHTML = '<option value="">Selecciona primero una Empresa / Departamento</option>';
+                return;
+            }
+
+            // Pedimos al servidor los empleados de la nueva ubicación
+            fetch(`/api/employees-by-location?location=${combinedValue}`)
+                .then(response => response.json())
+                .then(employees => {
+                    employeeSelect.innerHTML = '<option value="">Sin asignar</option>';
+                    
+                    employees.forEach(employee => {
+                        const option = document.createElement('option');
+                        option.value = employee.id;
+                        option.textContent = `${employee.last_name}, ${employee.first_name}`;
+                        employeeSelect.appendChild(option);
+                    });
+
+                    // Al cambiar de ubicación, lo ideal es limpiar el empleado anterior 
+                    // y por ende regresar el estado a 'stock' temporalmente
+                    employeeSelect.value = "";
+                    if (statusSelect.value === 'assigned') {
+                        statusSelect.value = 'stock';
+                    }
+                })
+                .catch(error => console.error('Error cargando empleados:', error));
+        });
+
+        // 2. ESCUCHA CUANDO CAMBIA EL EMPLEADO (Lógica anterior)
+        employeeSelect.addEventListener('change', function () {
+            if (this.value !== "") {
+                statusSelect.value = 'assigned';
+            } else {
+                if (statusSelect.value === 'assigned') {
+                    statusSelect.value = 'stock';
+                }
+            }
+        });
+
+        // 3. ESCUCHA CUANDO CAMBIA EL ESTADO (Lógica anterior)
+        statusSelect.addEventListener('change', function () {
+            if (this.value === 'stock' || this.value === 'faulty' || this.value === 'obsolete') {
+                if (this.value === 'stock') {
+                    employeeSelect.value = "";
+                }
+            } else if (this.value === 'assigned') {
+                if (employeeSelect.value === "") {
+                    employeeSelect.focus();
+                }
+            }
+        });
+    }
+});
 </script>
      @endsection

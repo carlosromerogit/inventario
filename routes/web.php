@@ -49,4 +49,6 @@ Route::middleware('auth')->group(function () {
     Route::post('/computers/{computer}/images',                [ImageController::class, 'store'])->name('computers.images.store');
     Route::delete('/computers/{computer}/images/{image}',      [ImageController::class, 'destroy'])->name('computers.images.destroy');
 
+    Route::get('/api/employees-by-location', [ComputerController::class, 'getEmployeesByLocation'])
+    ->name('api.employees.location');
 });
