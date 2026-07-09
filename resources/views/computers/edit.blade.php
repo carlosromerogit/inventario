@@ -40,10 +40,7 @@
         <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
     @enderror
 </div>
-                {{-- <x-select name="brand_model_id" label="Marca / Modelo"
-                    :options="$brandModels->mapWithKeys(fn($m) => [$m->id => $m->brand->name . ' — ' . $m->name])"
-                    :selected="old('brand_model_id', $computer->brand_model_id)"
-                    required /> --}}
+
 
                 <x-input name="serial" label="Número de serie" autocomplete="off" required
                     :value="old('serial', $computer->serial)" />
@@ -92,15 +89,6 @@
     @enderror
 </div>
 
-                {{-- <x-select name="department_id" label="Departamento"
-                    :options="$departments->pluck('name', 'id')"
-                    :selected="old('department_id', $computer->department_id)" />
-
-      
-                <x-select name="company_id" label="Empresa"
-                    :options="$companies->pluck('name', 'id')"
-                    :selected="old('company_id', $computer->company_id)" /> --}}
-
 <div>
     <label class="block text-sm font-medium text-slate-700 mb-1">Empleado asignado</label>
     <select name="employee_id" id="employee_select"
@@ -127,10 +115,6 @@
         @endforeach
     </select>
 </div>
-                    {{-- <x-select name="employee_id" label="Empleado asignado"
-                        :options="$employees->mapWithKeys(fn($e) => [$e->id => $e->last_name . ', ' . $e->first_name])"
-                        :selected="old('employee_id', $computer->employee_id)"
-                        placeholder="Sin asignar" /> --}}
 
                    <x-input name="fixed_asset" label="Activo fijo" autocomplete="off"
                     :value="old('fixed_asset', $computer->fixed_asset)" />
@@ -208,7 +192,66 @@
     </p>
 
 </div>
- 
+
+ <!-- 3. GARANTÍA -->
+<div class="bg-white rounded-lg border border-slate-200 p-6 shadow-xs">
+    <h2 class="text-sm font-semibold text-slate-700 mb-5">Garantía</h2>
+
+    <div class="grid grid-cols-2 gap-5">
+        <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">Vendedor / Proveedor</label>
+            <input type="text" name="seller" 
+                value="{{ old('seller', $computer->warranty->seller ?? '') }}" autocomplete="off"
+                class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500 bg-white @error('seller') border-red-500 @enderror">
+            @error('seller') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">Orden de Compra</label>
+            <input type="text" name="purchase_order" 
+                value="{{ old('purchase_order', $computer->warranty->purchase_order ?? '') }}" autocomplete="off"
+                class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500 bg-white @error('purchase_order') border-red-500 @enderror">
+            @error('purchase_order') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">Inicio de Garantía</label>
+            <input type="date" name="warranty_start_date" 
+                value="{{ old('warranty_start_date', isset($computer->warranty->start_date) ? \Carbon\Carbon::parse($computer->warranty->start_date)->format('Y-m-d') : '') }}"
+                class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500 bg-white @error('warranty_start_date') border-red-500 @enderror">
+            @error('warranty_start_date') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">Fin de Garantía</label>
+            <input type="date" name="warranty_end_date" 
+                value="{{ old('warranty_end_date', isset($computer->warranty->end_date) ? \Carbon\Carbon::parse($computer->warranty->end_date)->format('Y-m-d') : '') }}"
+                class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500 bg-white @error('warranty_end_date') border-red-500 @enderror">
+            @error('warranty_end_date') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+        </div>
+
+        <div class="col-span-2">
+            <label class="block text-sm font-medium text-slate-700 mb-1">PDF de Orden de Compra</label>
+            
+            @if($computer->warranty && $computer->warranty->purchase_order_pdf_path)
+                <div class="mb-2 flex items-center gap-2 bg-slate-50 p-2 rounded-md border border-slate-200">
+                    <svg class="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"/>
+                    </svg>
+                    <a href="{{ asset('storage/' . $computer->warranty->purchase_order_pdf_path) }}" target="_blank" 
+                       class="text-sm font-medium text-indigo-600 hover:text-indigo-800 underline">
+                        Ver PDF actual
+                    </a>
+                    <span class="text-xs text-slate-400">(Subir uno nuevo reemplazará al actual)</span>
+                </div>
+            @endif
+
+            <input type="file" name="purchase_order_pdf" accept="application/pdf"
+                class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200 border border-slate-300 rounded-md p-1 bg-white @error('purchase_order_pdf') border-red-500 @enderror">
+            @error('purchase_order_pdf') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+        </div>
+    </div>
+</div>
         <div class="bg-white rounded-lg border border-slate-200 p-6">
             <h2 class="text-sm font-semibold text-slate-700 mb-4">Imágenes del equipo</h2>
 

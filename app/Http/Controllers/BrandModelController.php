@@ -58,16 +58,21 @@ class BrandModelController extends Controller implements HasMiddleware
     public function store(Request $request)
     {
       $validated = $request->validate([
-        'brand_id' => ['required', 'exists:brands,id'],
-        'type'     => ['required', 'in:computer,drive'],
-        'name'     => [
-            'required',
-            'string',
-            'max:255',
-            Rule::unique('brand_models')
-                ->where(fn ($query) => $query->where('brand_id', $request->brand_id)->where('type', $request->type))
-        ],
-    ]);
+            'brand_id' => ['required', 'exists:brands,id'],
+            'type'     => ['required', 'in:computer,drive'],
+            'name'     => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('brand_models')
+                    ->where(fn ($query) => $query->where('brand_id', $request->brand_id)->where('type', $request->type))
+            ],
+        ], [], [
+            'brand_id' => 'marca',
+            'type'     => 'tipo de dispositivo',
+            'name'     => 'nombre del modelo',
+        ]);
+
         BrandModel::create($validated);
 
         return redirect()->route('brand-models.index')->with('success', 'Modelo creado con éxito.');
@@ -90,17 +95,22 @@ class BrandModelController extends Controller implements HasMiddleware
     public function update(Request $request, BrandModel $brandModel): RedirectResponse
     {
       $validated = $request->validate([
-        'brand_id' => ['required', 'exists:brands,id'],
-        'type'     => ['required', 'in:computer,drive'],
-        'name'     => [
-            'required',
-            'string',
-            'max:255',
-            Rule::unique('brand_models')
-                ->where(fn ($query) => $query->where('brand_id', $request->brand_id)->where('type', $request->type))
-                ->ignore($brandModel->id),
-        ],
-    ]);
+            'brand_id' => ['required', 'exists:brands,id'],
+            'type'     => ['required', 'in:computer,drive'],
+            'name'     => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('brand_models')
+                    ->where(fn ($query) => $query->where('brand_id', $request->brand_id)->where('type', $request->type))
+                    ->ignore($brandModel->id),
+            ],
+        ], [], [
+            'brand_id' => 'marca',
+            'type'     => 'tipo de dispositivo',
+            'name'     => 'nombre del modelo',
+        ]);
+        
         $brandModel->update($validated);
  
         return redirect()->route('brand-models.index')->with('success', 'Modelo actualizado correctamente.');

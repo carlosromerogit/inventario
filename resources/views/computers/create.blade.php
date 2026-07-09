@@ -69,14 +69,14 @@
     </select>
 </div>
 
-<div>
+{{-- <div>
     <label class="block text-sm font-medium text-slate-700 mb-1">Empleado asignado</label>
     <select name="employee_id" id="employee_select"
         class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm bg-white focus:border-indigo-500 focus:ring-indigo-500">
         <option value="">Selecciona primero una Empresa / Departamento</option>
     </select>
 </div>
-                          
+                           --}}
                           {{-- <x-select name="employee_id" label="Empleado"
                           :options="$employees->mapWithKeys(fn($e)=>[$e->id => $e->first_name.' '.$e->last_name])" /> --}}
                           
@@ -130,6 +130,47 @@
     <p id="drives-empty" class="text-sm text-slate-400 text-center py-4">
         Sin discos agregados
     </p>
+</div>
+
+<div class="bg-white rounded-lg border border-slate-200 p-6 shadow-xs">
+    <h2 class="text-sm font-semibold text-slate-700 mb-5">Garantía</h2>
+
+    <div class="grid grid-cols-2 gap-5">
+        <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">Vendedor / Proveedor</label>
+            <input type="text" name="seller" value="{{ old('seller') }}" autocomplete="off"
+                class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500 bg-white @error('seller') border-red-500 @enderror">
+            @error('seller') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">Orden de Compra</label>
+            <input type="text" name="purchase_order" value="{{ old('purchase_order') }}" autocomplete="off"
+                class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500 bg-white @error('purchase_order') border-red-500 @enderror">
+            @error('purchase_order') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">Inicio de Garantía</label>
+            <input type="date" name="warranty_start_date" value="{{ old('warranty_start_date') }}"
+                class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500 bg-white @error('warranty_start_date') border-red-500 @enderror">
+            @error('warranty_start_date') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">Fin de Garantía</label>
+            <input type="date" name="warranty_end_date" value="{{ old('warranty_end_date') }}"
+                class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500 bg-white @error('warranty_end_date') border-red-500 @enderror">
+            @error('warranty_end_date') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+        </div>
+
+        <div class="col-span-2">
+            <label class="block text-sm font-medium text-slate-700 mb-1">PDF de Orden de Compra</label>
+            <input type="file" name="purchase_order_pdf" accept="application/pdf"
+                class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200 border border-slate-300 rounded-md p-1 bg-white @error('purchase_order_pdf') border-red-500 @enderror">
+            @error('purchase_order_pdf') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+        </div>
+    </div>
 </div>
         <div class="bg-white rounded-lg border border-slate-200 p-6 shadow-xs">
 

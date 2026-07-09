@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
 
 class Computer extends Model
 {
@@ -55,5 +56,10 @@ class Computer extends Model
     public function images(): HasMany
     {
         return $this->hasMany(Image::class);
+    }
+
+   public function warranty(): MorphOne
+    {
+        return $this->morphOne(Warranty::class, 'warrantable');
     }
 }

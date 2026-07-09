@@ -96,36 +96,85 @@
                     <div>
                         <dt class="text-xs text-slate-400 uppercase">Estado</dt>
                         <dd class="text-sm font-semibold">
-
                             @switch($computer->status)
                                 @case('assigned')
                                     <span class="text-green-600">Asignado</span>
                                     @break
-
                                 @case('stock')
                                     <span class="text-slate-600">En stock</span>
                                     @break
-
                                 @case('faulty')
                                     <span class="text-red-600">Averiado</span>
                                     @break
-
                                 @case('obsolete')
                                     <span class="text-amber-600">Obsoleto</span>
                                     @break
-
                                 @default
                                     <span class="text-slate-400">Sin estado</span>
                             @endswitch
-
                         </dd>
                     </div>
 
                 </dl>
             </div>
 
-            <div class="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
+            <div class="bg-white border border-slate-200 rounded-lg shadow-sm p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-sm font-semibold text-slate-700">Información de Garantía</h3>
+                    @if($computer->warranty)
+                        @if($computer->warranty->end_date && \Carbon\Carbon::parse($computer->warranty->end_date)->isPast())
+                            <span class="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/10">Vencida</span>
+                        @else
+                            <span class="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">Vigente</span>
+                        @endif
+                    @endif
+                </div>
 
+                @if(!$computer->warranty)
+                    <p class="text-sm text-slate-400 text-center py-4">No se ha registrado ninguna garantía para este equipo.</p>
+                @else
+                    <dl class="grid grid-cols-2 gap-x-4 gap-y-4">
+                        <div>
+                            <dt class="text-xs text-slate-400 uppercase">Proveedor / Vendedor</dt>
+                            <dd class="text-sm font-medium text-slate-900">{{ $computer->warranty->seller ?? 'No especificado' }}</dd>
+                        </div>
+
+                        <div>
+                            <dt class="text-xs text-slate-400 uppercase">Orden de Compra</dt>
+                            <dd class="text-sm font-mono text-slate-900">{{ $computer->warranty->purchase_order ?? 'No especificada' }}</dd>
+                        </div>
+
+                        <div>
+                            <dt class="text-xs text-slate-400 uppercase">Fecha de Inicio</dt>
+                            <dd class="text-sm text-slate-900">
+                                {{ $computer->warranty->start_date ? \Carbon\Carbon::parse($computer->warranty->start_date)->format('d/m/Y') : '—' }}
+                            </dd>
+                        </div>
+
+                        <div>
+                            <dt class="text-xs text-slate-400 uppercase">Fecha de Vencimiento</dt>
+                            <dd class="text-sm text-slate-900">
+                                {{ $computer->warranty->end_date ? \Carbon\Carbon::parse($computer->warranty->end_date)->format('d/m/Y') : '—' }}
+                            </dd>
+                        </div>
+
+                        @if($computer->warranty->purchase_order_pdf_path)
+                            <div class="col-span-2 border-t border-slate-100 pt-3 flex items-center justify-between">
+                                <span class="text-xs text-slate-500 font-medium">Documento Adjunto:</span>
+                                <a href="{{ asset('storage/' . $computer->warranty->purchase_order_pdf_path) }}" target="_blank"
+                                   class="inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 hover:text-indigo-800 underline">
+                                    <svg class="w-4 h-4 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"/>
+                                    </svg>
+                                    Ver Orden de Compra (PDF)
+                                </a>
+                            </div>
+                        @endif
+                    </dl>
+                @endif
+            </div>
+
+            <div class="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
                 <div class="p-6 border-b border-slate-100">
                     <h3 class="text-sm font-semibold text-slate-700">
                         Unidades de almacenamiento

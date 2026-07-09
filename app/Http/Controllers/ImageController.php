@@ -27,15 +27,18 @@ class ImageController extends Controller implements HasMiddleware
 
     public function store(Request $request, Computer $computer): RedirectResponse
     {
-        $request->validate([
-            'images'   => ['required', 'array'],
-            'images.*' => ['image', 'max:4096'],
-        ]);
+    $request->validate([
+                'images'   => ['required', 'array'],
+                'images.*' => ['image', 'max:4096'],
+            ], [], [
+                'images'   => 'imágenes',
+                'images.*' => 'imagen seleccionada',
+            ]);
 
-        foreach ($request->file('images', []) as $file) {
-            $path = $file->store('computers/' . $computer->id, 'public');
-            Image::create(['path' => $path, 'computer_id' => $computer->id]);
-        }
+            foreach ($request->file('images', []) as $file) {
+                $path = $file->store('computers/' . $computer->id, 'public');
+                Image::create(['path' => $path, 'computer_id' => $computer->id]);
+            }
 
         return redirect()->back()->with('success', 'Imágenes agregadas correctamente.');
     }

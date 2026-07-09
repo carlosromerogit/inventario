@@ -55,12 +55,18 @@ class CompanyController extends Controller implements HasMiddleware
 
 public function store(Request $request): RedirectResponse
 {
-    $validated = $request->validate([
+  $validated = $request->validate([
         'name'          => ['required', 'string', 'unique:companies,name', 'max:255'],
         'address'       => ['nullable', 'string', 'max:500'],
         'RNC'           => ['nullable', 'string', 'max:50'],
         'departments'   => ['nullable', 'array'],
         'departments.*' => ['exists:departments,id'],
+    ], [], [
+        'name'          => 'nombre',
+        'address'       => 'dirección',
+        'RNC'           => 'RNC',
+        'departments'   => 'departamentos',
+        'departments.*' => 'departamento seleccionado',
     ]);
 
     $company = Company::create($validated);
@@ -89,14 +95,20 @@ public function edit(Company $company): View
     return view('companies.edit', compact('company', 'departments'));
 }
    public function update(Request $request, Company $company): RedirectResponse
-{
-    $validated = $request->validate([
-        'name'          => ['required', 'string', 'max:255', Rule::unique('companies', 'name')->ignore($company->id)],
-        'address'       => ['nullable', 'string', 'max:500'],
-        'RNC'           => ['nullable', 'string', 'max:50'],
-        'departments'   => ['nullable', 'array'], 
-        'departments.*' => ['exists:departments,id'],
-    ]);
+    {
+        $validated = $request->validate([
+            'name'          => ['required', 'string', 'max:255', Rule::unique('companies', 'name')->ignore($company->id)],
+            'address'       => ['nullable', 'string', 'max:500'],
+            'RNC'           => ['nullable', 'string', 'max:50'],
+            'departments'   => ['nullable', 'array'], 
+            'departments.*' => ['exists:departments,id'],
+        ], [], [
+            'name'          => 'nombre',
+            'address'       => 'dirección',
+            'RNC'           => 'RNC',
+            'departments'   => 'departamentos',
+            'departments.*' => 'departamento seleccionado',
+        ]);
 
     $company->update($validated);
 

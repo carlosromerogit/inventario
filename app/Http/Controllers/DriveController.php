@@ -42,11 +42,16 @@ class DriveController extends Controller implements HasMiddleware
 
     public function store(Request $request, Computer $computer): RedirectResponse
     {
-        $validated = $request->validate([
+   $validated = $request->validate([
             'drive_type_id'  => 'required|exists:drive_types,id',
             'brand_model_id' => 'required|exists:brand_models,id',
             'cap_number'     => 'required|integer|min:1',
             'cap_unit'       => 'required|in:MB,GB,TB',
+        ], [], [
+            'drive_type_id'  => 'tipo de disco',
+            'brand_model_id' => 'modelo del disco',
+            'cap_number'     => 'capacidad del disco',
+            'cap_unit'       => 'unidad de capacidad',
         ]);
 
         $computer->drives()->create([
@@ -81,11 +86,16 @@ class DriveController extends Controller implements HasMiddleware
 
     public function update(Request $request, Drive $drive): RedirectResponse
     {
-        $validated = $request->validate([
+   $validated = $request->validate([
             'drive_type_id'  => 'required|exists:drive_types,id',
             'brand_model_id' => 'required|exists:brand_models,id',
             'cap_number'     => 'required|integer|min:1',
             'cap_unit'       => 'required|in:MB,GB,TB',
+        ], [], [
+            'drive_type_id'  => 'tipo de disco',
+            'brand_model_id' => 'modelo del disco',
+            'cap_number'     => 'capacidad del disco',
+            'cap_unit'       => 'unidad de capacidad',
         ]);
 
         $drive->update([

@@ -102,16 +102,24 @@ class EmployeeController extends Controller implements HasMiddleware
         }
     }
 
-        $validated = $request->validate([
-            'first_name' => 'required|string|max:255',
-            'last_name' => 'required|string|max:255',
-            'company_id' => 'required|exists:companies,id',
+       $validated = $request->validate([
+            'first_name'    => 'required|string|max:255',
+            'last_name'     => 'required|string|max:255',
+            'company_id'    => 'required|exists:companies,id',
             'department_id' => 'required|exists:departments,id',
-            
             'employee_code' => 'required|string|max:50|unique:employees,employee_code', 
-            'email' => 'nullable|email|max:255',
-            'extension' => 'nullable|string',
-            'work_shift' => 'nullable|string',
+            'email'         => 'nullable|email|max:255',
+            'extension'     => 'nullable|string',
+            'work_shift'    => 'nullable|string',
+        ], [], [
+            'first_name'    => 'nombre',
+            'last_name'     => 'apellido',
+            'company_id'    => 'empresa',
+            'department_id' => 'departamento',
+            'employee_code' => 'código de empleado',
+            'email'         => 'correo electrónico',
+            'extension'     => 'extensión',
+            'work_shift'    => 'turno de trabajo',
         ]);
 
     Employee::create($validated);
@@ -147,16 +155,25 @@ class EmployeeController extends Controller implements HasMiddleware
         }
     }
 
-  $validated = $request->validate([
-        'first_name'    => 'required|string|max:255',
-        'last_name'     => 'required|string|max:255',
-        'company_id'    => 'required|exists:companies,id',
-        'department_id' => 'required|exists:departments,id',
-        'employee_code' => 'nullable|string|max:50',
-        'email'         => 'nullable|email|max:255',
-        'extension'     => 'nullable|string|max:20',
-        'work_shift'    => 'nullable|string|in:morning/afternoon,night',
-    ]);
+$validated = $request->validate([
+            'first_name'    => 'required|string|max:255',
+            'last_name'     => 'required|string|max:255',
+            'company_id'    => 'required|exists:companies,id',
+            'department_id' => 'required|exists:departments,id',
+            'employee_code' => 'nullable|string|max:50',
+            'email'         => 'nullable|email|max:255',
+            'extension'     => 'nullable|string|max:20',
+            'work_shift'    => 'nullable|string|in:morning/afternoon,night',
+        ], [], [
+            'first_name'    => 'nombre',
+            'last_name'     => 'apellido',
+            'company_id'    => 'empresa',
+            'department_id' => 'departamento',
+            'employee_code' => 'código de empleado',
+            'email'         => 'correo electrónico',
+            'extension'     => 'extensión',
+            'work_shift'    => 'turno de trabajo',
+        ]);
 
     $employee->update($validated);
 

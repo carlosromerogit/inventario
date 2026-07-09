@@ -40,10 +40,11 @@ class DriveTypeController extends Controller implements HasMiddleware
  
     public function store(Request $request): RedirectResponse
     {
-        $validated = $request->validate([
+      $validated = $request->validate([
             'name' => ['required', 'string', 'max:255', 'unique:drive_types,name'],
+        ], [], [
+            'name' => 'nombre',
         ]);
- 
         DriveType::create($validated);
  
         return redirect()->route('drive-types.index')->with('success', 'Tipo de disco creado correctamente.');
@@ -61,10 +62,12 @@ class DriveTypeController extends Controller implements HasMiddleware
  
     public function update(Request $request, DriveType $driveType): RedirectResponse
     {
-        $validated = $request->validate([
+      $validated = $request->validate([
             'name' => ['required', 'string', 'max:255', 'unique:drive_types,name,' . $driveType->id],
+        ], [], [
+            'name' => 'nombre',
         ]);
- 
+        
         $driveType->update($validated);
  
         return redirect()->route('drive-types.index')->with('success', 'Tipo de disco actualizado correctamente.');

@@ -45,7 +45,7 @@
 
         <div class="bg-white rounded-lg border border-slate-200 p-6 md:col-span-2">
             <h3 class="text-sm font-bold text-slate-700 mb-2 uppercase tracking-wider">Departamentos Habilitados</h3>
-            <p class="text-xs text-slate-400 mb-4">Áreas operativas asociadas a esta sucursal o razón social.</p>
+            {{-- <p class="text-xs text-slate-400 mb-4">Áreas operativas asociadas a esta sucursal o razón social.</p> --}}
             
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 @forelse($company->departments as $dept)

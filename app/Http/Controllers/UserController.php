@@ -148,6 +148,12 @@ class UserController extends Controller implements HasMiddleware
             $rules['password'] = ['required', 'confirmed', 'min:8'];
         }
 
-        return $request->validate($rules);
+        return $request->validate($rules, [], [
+            'name'     => 'nombre completo',
+            'username' => 'nombre de usuario',
+            'email'    => 'correo electrónico',
+            'password' => 'contraseña',
+            'role'     => 'rol asignado',
+        ]);
     }
 }

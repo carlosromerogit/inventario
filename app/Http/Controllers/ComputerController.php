@@ -271,6 +271,7 @@ public function show(Computer $computer): View
         'drives.driveType',
         'drives.brandModel.brand',
         'images',
+        'warranty'
     ]);
 
     return view('computers.show', compact('computer'));
@@ -281,7 +282,7 @@ public function store(Request $request): RedirectResponse
 
     $validated = $this->validateComputer($request);
 
-    DB::transaction(function () use ($request, $validated) {
+    DB::transaction(function () use ($request, $validated, &$computer) {
         $computer = Computer::create($validated);
 
         foreach ($request->drives ?? [] as $driveData) {
@@ -303,6 +304,21 @@ public function store(Request $request): RedirectResponse
             }
         }
     });
+
+    if ($request->filled('seller') || $request->filled('purchase_order') || $request->hasFile('purchase_order_pdf')) {
+        $pdfPath = null;
+        if ($request->hasFile('purchase_order_pdf')) {
+            $pdfPath = $request->file('purchase_order_pdf')->store('warranties', 'public');
+        }
+
+        $computer->warranty()->create([
+            'seller' => $request->input('seller'),
+            'purchase_order' => $request->input('purchase_order'),
+            'purchase_order_pdf_path' => $pdfPath,
+            'start_date' => $request->input('warranty_start_date'), 
+            'end_date' => $request->input('warranty_end_date'),  
+        ]);
+    }
 
     return redirect()->route('computers.index')
         ->with('success', 'Equipo creado correctamente.');
@@ -365,6 +381,25 @@ public function store(Request $request): RedirectResponse
                 ]);
             }
         }
+
+        if ($request->filled('seller') || $request->filled('purchase_order') || $request->hasFile('purchase_order_pdf')) {
+        
+        $warrantyData = [
+            'seller' => $request->input('seller'),
+            'purchase_order' => $request->input('purchase_order'),
+            'start_date' => $request->input('warranty_start_date'),
+            'end_date' => $request->input('warranty_end_date'),
+        ];
+
+        if ($request->hasFile('purchase_order_pdf')) {
+            if ($computer->warranty && $computer->warranty->purchase_order_pdf_path) {
+                Storage::disk('public')->delete($computer->warranty->purchase_order_pdf_path);
+            }
+            $warrantyData['purchase_order_pdf_path'] = $request->file('purchase_order_pdf')->store('warranties', 'public');
+        }
+
+        $computer->warranty()->updateOrCreate([], $warrantyData);
+    }
     });
 
     return redirect()
@@ -397,7 +432,7 @@ private function validateComputer(Request $request, ?int $id = null): array
         'employee_id'         => ['nullable', 'exists:employees,id'],
         'processor'           => ['nullable', 'string'],
         'ram'                 => ['nullable', 'string'],
-        'hostname'            => ['nullable', 'string'],
+        'hostname'            => ['nullable', 'string', 'unique:computers,hostname,' . $id],
         'fixed_asset'         => ['nullable', 'string', 'unique:computers,fixed_asset,' . $id],
         'operating_system_id' => ['nullable', 'exists:operating_systems,id'],
         'status'              => ['required', 'in:stock,assigned,faulty,obsolete'],
@@ -407,7 +442,40 @@ private function validateComputer(Request $request, ?int $id = null): array
         'drives.*.brand_model_id' => ['required_with:drives', 'exists:brand_models,id'],
         'drives.*.cap_number'     => ['required_with:drives', 'integer', 'min:1'],
         'drives.*.cap_unit'       => ['required_with:drives', 'in:MB,GB,TB'],
-    ]);
+
+        'seller'              => ['nullable', 'string', 'max:255'],
+        'purchase_order'      => ['nullable', 'string', 'max:255'],
+        'purchase_order_pdf'  => ['nullable', 'file', 'mimes:pdf', 'max:5120'],
+        'warranty_start_date' => ['nullable', 'date'],
+        'warranty_end_date'   => ['nullable', 'date', 'after_or_equal:warranty_start_date'],
+    ],
+    [],
+    [
+        'brand_model_id'          => 'modelo de marca',
+        'serial'                  => 'número de serie',
+        'department_id'           => 'departamento',
+        'company_id'              => 'empresa',
+        'employee_id'             => 'empleado',
+        'processor'               => 'procesador',
+        'ram'                     => 'memoria RAM',
+        'hostname'                => 'nombre de host (hostname)',
+        'fixed_asset'             => 'activo fijo',
+        'operating_system_id'     => 'sistema operativo',
+        'status'                  => 'estado',
+
+        'drives'                  => 'unidades de almacenamiento',
+        'drives.*.drive_type_id'  => 'tipo de disco',
+        'drives.*.brand_model_id' => 'modelo del disco',
+        'drives.*.cap_number'     => 'capacidad del disco',
+        'drives.*.cap_unit'       => 'unidad de capacidad',
+
+        'seller'                  => 'vendedor / proveedor',
+        'purchase_order'          => 'orden de compra',
+        'purchase_order_pdf'      => 'PDF de orden de compra',
+        'warranty_start_date'     => 'inicio de garantía',
+        'warranty_end_date'       => 'fin de garantía',
+    ]
+    );
 }
 
     private function validateDrives(Request $request): void

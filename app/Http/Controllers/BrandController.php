@@ -49,10 +49,12 @@ class BrandController extends Controller implements HasMiddleware
  
     public function store(Request $request): RedirectResponse
     {
-        $validated = $request->validate([
+     $validated = $request->validate([
             'name' => ['required', 'string', 'max:255', 'unique:brands,name'],
+        ], [], [
+            'name' => 'nombre',
         ]);
- 
+
         Brand::create($validated);
  
         return redirect()->route('brands.index')->with('success', 'Marca creada correctamente.');
@@ -72,10 +74,11 @@ class BrandController extends Controller implements HasMiddleware
  
     public function update(Request $request, Brand $brand): RedirectResponse
     {
-        $validated = $request->validate([
+       $validated = $request->validate([
             'name' => ['required', 'string', 'max:255', 'unique:brands,name,' . $brand->id],
+        ], [], [
+            'name' => 'nombre', 
         ]);
- 
         $brand->update($validated);
  
         return redirect()->route('brands.index')->with('success', 'Marca actualizada correctamente.');

@@ -18,7 +18,7 @@ return new class extends Migration
             $table->foreignId('department_id')->nullable()->constrained()->nullOnDelete()->cascadeOnUpdate();
             $table->string('processor')->nullable();
             $table->string('ram')->nullable();
-            $table->string('hostname')->nullable();
+            $table->string('hostname')->nullable()->unique();;
             $table->string('fixed_asset')->nullable()->unique();
             $table->foreignId('employee_id')->nullable()->constrained()->nullOnDelete()->cascadeOnUpdate();
             $table->foreignId('operating_system_id')->nullable()->constrained()->nullOnDelete()->cascadeOnUpdate();

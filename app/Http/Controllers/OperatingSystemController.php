@@ -40,10 +40,12 @@ class OperatingSystemController extends Controller implements HasMiddleware
  
     public function store(Request $request): RedirectResponse
     {
-        $validated = $request->validate([
+       $validated = $request->validate([
             'name' => ['required', 'string', 'max:255', 'unique:operating_systems,name'],
+        ], [], [
+            'name' => 'nombre',
         ]);
- 
+
         OperatingSystem::create($validated);
  
         return redirect()->route('operating-systems.index')->with('success', 'Sistema operativo creado correctamente.');
@@ -63,8 +65,10 @@ class OperatingSystemController extends Controller implements HasMiddleware
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255', 'unique:operating_systems,name,' . $operatingSystem->id],
+        ], [], [
+            'name' => 'nombre',
         ]);
- 
+        
         $operatingSystem->update($validated);
  
         return redirect()->route('operating-systems.index')->with('success', 'Sistema operativo actualizado correctamente.');

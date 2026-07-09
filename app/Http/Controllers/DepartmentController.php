@@ -59,11 +59,15 @@ public function create(): View
  
     public function store(Request $request): RedirectResponse
 {
-    $validated = $request->validate([
-        'name'        => ['required', 'string', 'max:255', 'unique:departments,name'],
-        'companies'   => ['nullable', 'array'],
-        'companies.*' => ['exists:companies,id'],
-    ]);
+   $validated = $request->validate([
+            'name'        => ['required', 'string', 'max:255', 'unique:departments,name'],
+            'companies'   => ['nullable', 'array'],
+            'companies.*' => ['exists:companies,id'],
+        ], [], [
+            'name'        => 'nombre',
+            'companies'   => 'empresas',
+            'companies.*' => 'empresa seleccionada',
+        ]);
 
     $department = Department::create($validated);
 
@@ -90,11 +94,15 @@ public function create(): View
     public function update(Request $request, Department $department): RedirectResponse
 {
     $validated = $request->validate([
-        'name'        => ['required', 'string', 'max:255', 'unique:departments,name,' . $department->id],
-        'companies'   => ['nullable', 'array'], 
-        'companies.*' => ['exists:companies,id'],
-    ]);
-
+            'name'        => ['required', 'string', 'max:255', 'unique:departments,name,' . $department->id],
+            'companies'   => ['nullable', 'array'], 
+            'companies.*' => ['exists:companies,id'],
+        ], [], [
+            'name'        => 'nombre',
+            'companies'   => 'empresas',
+            'companies.*' => 'empresa seleccionada',
+        ]);
+        
     $department->update($validated);
 
     $department->companies()->sync($request->input('companies', []));
