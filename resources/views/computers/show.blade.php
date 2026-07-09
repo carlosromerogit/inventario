@@ -6,7 +6,6 @@
 @section('content')
 <div class="space-y-6">
 
-    {{-- HEADER ACTIONS --}}
     <div class="flex items-center justify-between">
         <a href="{{ route('computers.index') }}"
            class="text-sm font-medium text-slate-600 hover:text-slate-900 transition">
@@ -21,10 +20,8 @@
 
     <div class="grid grid-cols-3 gap-6">
 
-        {{-- IZQUIERDA --}}
         <div class="col-span-2 space-y-6">
 
-            {{-- ESPECIFICACIONES --}}
             <div class="bg-white border border-slate-200 rounded-lg shadow-sm p-6">
                 <h3 class="text-sm font-semibold text-slate-700 mb-4">
                     Especificaciones del Sistema
@@ -127,7 +124,6 @@
                 </dl>
             </div>
 
-            {{-- DISCOS --}}
             <div class="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
 
                 <div class="p-6 border-b border-slate-100">
@@ -174,10 +170,8 @@
 
         </div>
 
-        {{-- DERECHA --}}
         <div class="space-y-6">
 
-            {{-- CUSTODIO --}}
             <div class="bg-white border border-slate-200 rounded-lg shadow-sm p-6">
                 <h3 class="text-sm font-semibold text-slate-700 mb-3">Asignado</h3>
 
@@ -189,7 +183,6 @@
                 </p>
             </div>
 
-            {{-- GALERÍA --}}
             <div class="bg-white border border-slate-200 rounded-lg shadow-sm p-6">
                 <h3 class="text-sm font-semibold text-slate-700 mb-4">
                     Galería
@@ -215,7 +208,6 @@
         </div>
     </div>
 
-    {{-- MODAL GALERÍA --}}
     <div id="galleryModal"
          class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 p-4 opacity-0 transition">
 
@@ -230,7 +222,6 @@
     </div>
 </div>
 
-{{-- SCRIPT --}}
 <script>
 document.addEventListener('DOMContentLoaded', () => {
 

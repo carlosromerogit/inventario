@@ -29,25 +29,20 @@ class BrandModelController extends Controller implements HasMiddleware
 
     public function index(Request $request): View
     {
-        // Iniciamos la consulta cargando la relación para evitar el problema de consultas N+1
     $query = BrandModel::with('brand');
 
-    // 🔎 Filtro 1: Búsqueda por Nombre de Modelo
     if ($request->filled('search')) {
         $query->where('name', 'like', '%' . $request->search . '%');
     }
 
-    // 🏷️ Filtro 2: Filtrar por Marca asociada
     if ($request->filled('brand_id')) {
         $query->where('brand_id', $request->input('brand_id'));
     }
 
-    // Paginamos ordenando por el nombre del modelo
     $brandModels = $query->orderBy('name')
         ->paginate(10)
         ->withQueryString();
 
-    // Cargamos todas las marcas disponibles para el selector del filtro
     $brands = Brand::orderBy('name')->get();
 
     return view('brand-models.index', compact('brandModels', 'brands'));
@@ -96,12 +91,11 @@ class BrandModelController extends Controller implements HasMiddleware
     {
       $validated = $request->validate([
         'brand_id' => ['required', 'exists:brands,id'],
-        'type'     => ['required', 'in:computer,drive'], // 👈 ¡Agregado! No olvides validar el tipo al actualizar
+        'type'     => ['required', 'in:computer,drive'],
         'name'     => [
             'required',
             'string',
             'max:255',
-            // 🔐 Misma regla compuesta, pero ignorando el ID actual para que te deje guardar sin cambiar el nombre
             Rule::unique('brand_models')
                 ->where(fn ($query) => $query->where('brand_id', $request->brand_id)->where('type', $request->type))
                 ->ignore($brandModel->id),
@@ -118,7 +112,6 @@ class BrandModelController extends Controller implements HasMiddleware
             return redirect()->route('brand-models.index')->with('error', 'No se puede eliminar el modelo porque tiene computadoras asociadas en el inventario.');
         }
 
-        // Si está libre, se elimina con seguridad
         $brandModel->delete();
 
         return redirect()->route('brand-models.index')->with('success', 'Modelo eliminado correctamente.');

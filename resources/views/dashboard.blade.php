@@ -6,10 +6,8 @@
 @section('content')
 <div class="space-y-6">
 
-    {{-- FILA 1: Tarjetas de Métricas Principales --}}
     <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
         
-        {{-- Tarjeta 1: Total PCs --}}
         <div class="bg-white overflow-hidden shadow-sm rounded-lg border border-slate-200 p-5">
             <div class="flex items-center">
                 <div class="p-3 rounded-md bg-indigo-50 text-indigo-600">
@@ -22,7 +20,6 @@
             </div>
         </div>
 
-        {{-- Tarjeta 2: Asignadas --}}
         <div class="bg-white overflow-hidden shadow-sm rounded-lg border border-slate-200 p-5">
             <div class="flex items-center">
                 <div class="p-3 rounded-md bg-green-50 text-green-600">
@@ -35,11 +32,9 @@
             </div>
         </div>
 
-        {{-- Tarjeta 3: En Stock --}}
         <div class="bg-white overflow-hidden shadow-sm rounded-lg border border-slate-200 p-5">
             <div class="flex items-center">
                 <div class="p-3 rounded-md bg-amber-50 text-amber-600">
-                    📦
                 </div>
                 <div class="ml-4">
                     <p class="text-sm font-medium text-slate-500 truncate">PCs Disponibles (Stock)</p>
@@ -48,11 +43,9 @@
             </div>
         </div>
 
-        {{-- Tarjeta 4: Discos duros --}}
         <div class="bg-white overflow-hidden shadow-sm rounded-lg border border-slate-200 p-5">
             <div class="flex items-center">
                 <div class="p-3 rounded-md bg-blue-50 text-blue-600">
-                    💾
                 </div>
                 <div class="ml-4">
                     <p class="text-sm font-medium text-slate-500 truncate">Total Unidades Almacenamiento</p>
@@ -62,10 +55,8 @@
         </div>
     </div>
 
-    {{-- FILA 2: Sección de Gráficos Analíticos --}}
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
         
-        {{-- Gráfico 1: Equipos por Departamento --}}
         <div class="bg-white border border-slate-200 rounded-lg shadow-sm p-6">
             <h3 class="text-sm font-semibold text-slate-700 mb-4">Equipos distribuidos por Departamento</h3>
             <div class="relative h-64">
@@ -73,7 +64,6 @@
             </div>
         </div>
 
-        {{-- Gráfico 2: Sistemas Operativos --}}
         <div class="bg-white border border-slate-200 rounded-lg shadow-sm p-6">
             <h3 class="text-sm font-semibold text-slate-700 mb-4">Uso de Sistemas Operativos</h3>
             <div class="relative h-64">
@@ -82,7 +72,6 @@
         </div>
     </div>
 
-    {{-- FILA 3: Últimas PCs registradas --}}
     <div class="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
         <div class="p-6 border-b border-slate-100 flex justify-between items-center">
             <h3 class="text-sm font-semibold text-slate-700">Últimos Equipos Incorporados al Inventario</h3>
@@ -124,12 +113,10 @@
     </div>
 </div>
 
-{{-- Script de Inicialización de Gráficos (Chart.js) --}}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 document.addEventListener("DOMContentLoaded", function() {
     
-    // --- Configuración Gráfico 1: Departamentos (Gráfico de Barras Horizontales) ---
     var deptsData = @json($departmentsData);
     var ctxDepts = document.getElementById('departmentsChart').getContext('2d');
     new Chart(ctxDepts, {
@@ -146,7 +133,7 @@ document.addEventListener("DOMContentLoaded", function() {
             }]
         },
         options: {
-            indexAxis: 'y', // Hace las barras horizontales
+            indexAxis: 'y', 
             responsive: true,
             maintainAspectRatio: false,
             plugins: { legend: { display: false } },
@@ -154,7 +141,6 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     });
 
-    // --- Configuración Gráfico 2: Sistemas Operativos (Gráfico Tipo Dona) ---
     var osRawData = @json($osData);
     var ctxOs = document.getElementById('osChart').getContext('2d');
     new Chart(ctxOs, {

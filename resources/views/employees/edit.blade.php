@@ -84,17 +84,16 @@
                 placeholder="Sin extensión"
             />
 
-            {{-- Jornada de trabajo --}}
-            <x-select
-                name="work_shift"
-                label="Jornada de trabajo"
-                :options="[
-                    'morning/afternoon' => 'Mañana/Tarde',
-                    'night' => 'Noche',
-                ]"
-                :selected="$employee->work_shift"
-                placeholder="Selecciona jornada"
-            />
+    <x-select
+        name="work_shift"
+        label="Jornada de trabajo"
+        :options="[
+            'morning/afternoon' => 'Mañana/Tarde',
+            'night' => 'Noche',
+        ]"
+        :selected="old('work_shift', $employee->work_shift)"
+        placeholder="Selecciona jornada"
+    />
 
             <div class="flex items-center gap-3 pt-2">
                 <x-button>Guardar cambios</x-button>

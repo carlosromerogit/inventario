@@ -7,7 +7,6 @@
 
 <div class="space-y-6">
 
-    {{-- HEADER --}}
     <div class="flex items-center justify-between">
 
         <div class="text-sm text-slate-500">
@@ -23,7 +22,6 @@
 
     </div>
 
-    {{-- TABLE --}}
     <div class="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
 
         <table class="min-w-full divide-y divide-slate-200">
@@ -93,7 +91,6 @@
                         </td>
 
 
-                        {{-- ACCIONES --}}
                         <td class="px-6 py-4 text-right text-sm space-x-3">
 
                             <a href="{{ route('users.show', $user) }}"
@@ -144,7 +141,6 @@
 
     </div>
 
-    {{-- PAGINACION --}}
     <div>
         {{ $users->links() }}
     </div>

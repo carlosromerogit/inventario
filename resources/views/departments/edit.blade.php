@@ -16,7 +16,6 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto p-3 border border-slate-200 rounded-md bg-slate-50">
                     @forelse($companies as $company)
                         @php
-                            // Comprobamos si debe estar marcado (por old input o por relación de BD)
                             $isChecked = is_array(old('companies')) 
                                 ? in_array($company->id, old('companies')) 
                                 : $department->companies->contains($company->id);

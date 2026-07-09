@@ -16,7 +16,6 @@
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {{-- 📊 INFORMACIÓN GENERAL --}}
         <div class="bg-white rounded-lg border border-slate-200 p-6 md:col-span-1 h-fit">
             <h3 class="text-sm font-bold text-slate-700 mb-4 uppercase tracking-wider">Datos del Departamento</h3>
             <dl class="space-y-4">
@@ -34,7 +33,6 @@
             </dl>
         </div>
 
-        {{-- 🏢 EMPRESAS QUE TIENEN ESTE DEPARTAMENTO --}}
         <div class="bg-white rounded-lg border border-slate-200 p-6 md:col-span-2">
             <h3 class="text-sm font-bold text-slate-700 mb-2 uppercase tracking-wider">Empresas que lo integran</h3>
             <p class="text-xs text-slate-400 mb-4">Lista de empresas del grupo que tienen habilitada esta área de trabajo.</p>

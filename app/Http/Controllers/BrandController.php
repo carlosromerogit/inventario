@@ -83,13 +83,11 @@ class BrandController extends Controller implements HasMiddleware
  
     public function destroy(Brand $brand): RedirectResponse
     {
-    // 🛑 Validar si la marca tiene modelos registrados usando tu relación 'brandModels'
         if ($brand->brandModels()->exists()) {
             return redirect()->route('brands.index')
                 ->with('error', 'No se puede eliminar la marca porque tiene modelos asociados en el sistema.');
         }
 
-        // Si está limpia, se borra
         $brand->delete();
 
         return redirect()->route('brands.index')

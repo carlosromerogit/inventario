@@ -45,7 +45,6 @@ class ComputerController extends Controller implements HasMiddleware
         'company'
     ]);
 
-    // 🔎 SEARCH (Buscador por Serial o Nombre del Empleado)
     if ($request->filled('search')) {
         $search = $request->search;
 
@@ -60,7 +59,6 @@ class ComputerController extends Controller implements HasMiddleware
     if ($request->filled('brand_or_model')) {
     $value = $request->input('brand_or_model');
 
-    // 1. Si el usuario seleccionó una marca en general (Ej: brand_2)
     if (str_starts_with($value, 'brand_')) {
         $brandId = str_replace('brand_', '', $value);
         
@@ -68,7 +66,6 @@ class ComputerController extends Controller implements HasMiddleware
             $q->where('brand_id', $brandId);
         });
     } 
-    // 2. Si el usuario seleccionó un modelo específico (Ej: model_5)
     elseif (str_starts_with($value, 'model_')) {
         $modelId = str_replace('model_', '', $value);
         
@@ -76,15 +73,12 @@ class ComputerController extends Controller implements HasMiddleware
     }
 }
 
-    // // 🏢 FILTRO: MARCA (Ya lo tenías, pero ojo: este solo filtra computadoras si tuvieras relación directa. 
-    // // Si la marca la heredas a través del modelo, la forma correcta de filtrarla es la siguiente:)
     // if ($request->filled('brand_id')) {
     //     $query->whereHas('brandModel', function ($q) use ($request) {
     //         $q->where('brand_id', $request->brand_id);
     //     });
     // }
 
-    // // 💻 🔥 AQUÍ VA EL NUEVO FILTRO: MODELO DE COMPUTADORA
     // if ($request->filled('brand_model_id')) {
     //     $query->where('brand_model_id', $request->brand_model_id);
     // }
@@ -92,15 +86,12 @@ class ComputerController extends Controller implements HasMiddleware
     if ($request->filled('company_or_department')) {
     $value = $request->input('company_or_department');
 
-    // 1. Filtrar por toda la Empresa
     if (str_starts_with($value, 'company_')) {
         $companyId = str_replace('company_', '', $value);
         
         $query->where('company_id', $companyId);
     } 
-    // 2. Filtrar por un Departamento específico de una Empresa específica
     elseif (str_starts_with($value, 'comp_')) {
-        // Expresión regular para extraer los IDs de "comp_{X}_dept_{Y}"
         preg_match('/comp_(\d+)_dept_(\d+)/', $value, $matches);
         
         if (count($matches) === 3) {
@@ -113,32 +104,26 @@ class ComputerController extends Controller implements HasMiddleware
     }
 }
 
-    // 🏢 FILTRO: EMPRESA
     if ($request->filled('company_id')) {
         $query->where('company_id', $request->company_id);
     }
 
-    // 🏢 FILTRO: DEPARTAMENTO
     if ($request->filled('department_id')) {
         $query->where('department_id', $request->department_id);
     }
 
-    // 💻 FILTRO: SISTEMA OPERATIVO
     if ($request->filled('operating_system_id')) {
         $query->where('operating_system_id', $request->operating_system_id);
     }
 
-    // 📌 FILTRO: ESTADO REAL
     if ($request->filled('status')) {
         $query->where('status', $request->status);
     }
 
-    // 🧠 FILTRO: MEMORIA RAM
     if ($request->filled('ram')) {
         $query->where('ram', 'like', '%' . $request->ram . '%');
     }
 
-    // 💾 FILTROS DE DISCOS INSTALADOS
     if (
         $request->filled('drive_type_id') ||
         $request->filled('drive_brand_model_id') ||
@@ -166,7 +151,6 @@ class ComputerController extends Controller implements HasMiddleware
         });
     }
 
-    // 📥 DETECTAR EXPORTACIÓN A PDF
     if ($request->input('export') === 'pdf') {
         $computersToExport = $query->with(['brandModel.brand', 'employee', 'company', 'operatingSystem'])
             ->orderBy('serial')
@@ -181,7 +165,6 @@ class ComputerController extends Controller implements HasMiddleware
             $brand = \App\Models\Brand::find($request->brand_id);
             $filtrosAplicados['Marca'] = $brand ? $brand->name : 'Desconocida';
         }
-        // 🔥 NUEVO: Agregar el modelo al reporte PDF si está activo
         if ($request->filled('brand_model_id')) {
             $bModel = \App\Models\BrandModel::with('brand')->find($request->brand_model_id);
             $filtrosAplicados['Modelo'] = $bModel ? "{$bModel->brand->name} {$bModel->name}" : 'Desconocido';
@@ -221,12 +204,10 @@ class ComputerController extends Controller implements HasMiddleware
         return $pdf->download($fileName);
     }
 
-    // 📊 EJECUTAR PAGINACIÓN DE LA VISTA WEB
     $computers = $query->orderBy('serial')
         ->paginate(15)
         ->withQueryString();
 
-    // 📦 RECOLECCIÓN DE VARIABLES PARA LOS MENÚS DESPLEGABLES (SELECTS)
     $driveTypes = \App\Models\DriveType::orderBy('name')->get();
 
     $driveModels = BrandModel::with('brand')
@@ -234,13 +215,11 @@ class ComputerController extends Controller implements HasMiddleware
         ->orderBy('name')
         ->get();
 
-    // 🔥 NUEVO: Cargar los modelos exclusivos para computadoras
     $computerModels = BrandModel::with('brand')
         ->where('type', 'computer')
         ->orderBy('name')
         ->get();
 
-    // RETORNAR LA VISTA CON TODOS LOS COMPONENTES
     return view('computers.index', [
         'computers'        => $computers,
         'brands'           => \App\Models\Brand::orderBy('name')->get(),
@@ -249,7 +228,7 @@ class ComputerController extends Controller implements HasMiddleware
         'companies'        => \App\Models\Company::orderBy('name')->get(),
         'driveTypes'       => $driveTypes,
         'driveModels'      => $driveModels,
-        'computerModels'   => $computerModels, // 🔥 Enviado a la vista Blade
+        'computerModels'   => $computerModels,
     ]);
 }
     public function create(): View
@@ -298,7 +277,6 @@ public function show(Computer $computer): View
 }
 public function store(Request $request): RedirectResponse
 {
-    // Parsar el string antes de pasar a la validación
     $this->parseCompanyAndDepartment($request);
 
     $validated = $this->validateComputer($request);
@@ -330,34 +308,33 @@ public function store(Request $request): RedirectResponse
         ->with('success', 'Equipo creado correctamente.');
 }
 
-public function edit(Computer $computer): View
-{
-    $computer->load([
-        'brandModel.brand',
-        'department',
-        'employee',
-        'operatingSystem',
-        'company',
-        'drives.driveType',
-        'drives.brandModel.brand',
-        'images',
-    ]);
+    public function edit(Computer $computer): View
+    {
+        $computer->load([
+            'brandModel.brand',
+            'department',
+            'employee',
+            'operatingSystem',
+            'company',
+            'drives.driveType',
+            'drives.brandModel.brand',
+            'images',
+        ]);
 
-    return view('computers.edit', [
-        'computer' => $computer,
-        'brandModels' => BrandModel::with('brand')->where('type', 'computer')->orderBy('name')->get(),
-        'departments' => Department::orderBy('name')->get(),
-        'employees' => Employee::orderBy('last_name')->get(),
-        'operatingSystems' => OperatingSystem::orderBy('name')->get(),
-        'companies' => Company::orderBy('name')->get(),
-        'driveTypes' => DriveType::orderBy('name')->get(),
-        'driveModels' => BrandModel::with('brand')->where('type', 'drive')->orderBy('name')->get(),
-    ]);
-}
+        return view('computers.edit', [
+            'computer' => $computer,
+            'brandModels' => BrandModel::with('brand')->where('type', 'computer')->orderBy('name')->get(),
+            'departments' => Department::orderBy('name')->get(),
+            'employees' => Employee::orderBy('last_name')->get(),
+            'operatingSystems' => OperatingSystem::orderBy('name')->get(),
+            'companies' => Company::orderBy('name')->get(),
+            'driveTypes' => DriveType::orderBy('name')->get(),
+            'driveModels' => BrandModel::with('brand')->where('type', 'drive')->orderBy('name')->get(),
+        ]);
+    }
 
     public function update(Request $request, Computer $computer): RedirectResponse
 {
-    // Parsar el string antes de pasar a la validación
     $this->parseCompanyAndDepartment($request);
 
     $validated = $this->validateComputer($request, $computer->id);
@@ -414,7 +391,6 @@ private function validateComputer(Request $request, ?int $id = null): array
         'brand_model_id'      => ['required', 'exists:brand_models,id'],
         'serial'              => ['required', 'string', 'max:255', 'unique:computers,serial,' . $id],
         
-        // Modificados a requeridos si el formulario los exige obligatorios
         'department_id'       => ['required', 'exists:departments,id'],
         'company_id'          => ['required', 'exists:companies,id'],
         

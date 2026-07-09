@@ -5,13 +5,11 @@
 
 @section('content')
 
-{{-- FILTROS --}}
 <div class="bg-white rounded-lg border border-slate-200 shadow-sm p-4 mb-6">
     <form action="{{ route('employees.index') }}" method="GET" class="space-y-4">
 
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-5">
 
-            {{-- BUSCAR --}}
             <div>
                 <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">
                     Buscar Empleado
@@ -24,7 +22,6 @@
                        class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
             </div>
 
-            {{-- CODIGO --}}
             <div>
                 <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">
                     Código
@@ -39,7 +36,6 @@
 
        
 
-            {{-- EMPRESA --}}
             {{-- <div>
                 <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">
                     Empresa
@@ -56,7 +52,6 @@
                 </select>
             </div> --}}
 
-                 {{-- DEPARTAMENTO --}}
             {{-- <div>
                 <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">
                     Departamento
@@ -96,7 +91,6 @@
         @endforeach
     </select>
 </div>
-            {{-- JORNADA (WORK SHIFT) --}}
             <div>
                 <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">
                     Jornada
@@ -118,7 +112,6 @@
 
         </div>
 
-        {{-- BOTONES --}}
         <div class="flex justify-end gap-2 pt-2 border-t border-slate-100">
 
             @if(request()->anyFilled(['search', 'employee_code','company_or_department', 'department_id', 'company_id', 'work_shift']))
@@ -138,7 +131,6 @@
     </form>
 </div>
 
-    {{-- HEADER --}}
     <div class="flex items-center justify-between mb-6">
         <p class="text-sm text-slate-500">
             {{ $employees->total() }} empleados encontrados
@@ -150,7 +142,6 @@
         </x-button-secondary>
     </div>
 
-    {{-- TABLA --}}
     <div class="bg-white rounded-lg border border-slate-200 overflow-hidden">
 
         <table class="min-w-full divide-y divide-slate-200">
@@ -173,7 +164,6 @@
                 @forelse ($employees as $employee)
                     <tr class="hover:bg-slate-50">
 
-                        {{-- NOMBRE --}}
                         <td class="px-6 py-4">
                             <a href="{{ route('employees.show', $employee) }}"
                                class="text-sm font-medium text-indigo-600 hover:text-indigo-800">
@@ -193,18 +183,14 @@
                             {{ $employee->extension ?? '—' }}
                         </td>
 
-                        {{-- EMPRESA --}}
                         <td class="px-6 py-4 text-sm text-slate-600">
                             {{ $employee->company?->name ?? '—' }}
                         </td>
 
-                        {{-- DEPARTAMENTO --}}
                         <td class="px-6 py-4 text-sm text-slate-600">
                             {{ $employee->department?->name ?? '—' }}
                         </td>
 
-
-                        {{-- EQUIPOS --}}
                         <td class="px-6 py-4 text-sm">
                             @if($employee->computers->count())
                                 <span class="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 border border-green-200">
@@ -215,7 +201,6 @@
                             @endif
                         </td>
 
-                        {{-- ACCIONES --}}
                         <td class="px-6 py-4 text-right space-x-3 text-sm">
                             <a href="{{ route('employees.show', $employee) }}"
                                class="text-slate-600 hover:text-indigo-600">Ver</a>
@@ -249,7 +234,6 @@
         </table>
     </div>
 
-    {{-- PAGINACIÓN --}}
     <div class="mt-4">
         {{ $employees->links() }}
     </div>

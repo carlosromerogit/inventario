@@ -30,27 +30,22 @@ class DepartmentController extends Controller implements HasMiddleware
 
   public function index(Request $request): View
 {
-    // Cargamos la relación 'companies' de antemano para evitar consultas extras (N+1)
     $query = Department::with('companies');
 
-    // 🔎 Filtro 1: Búsqueda por Nombre del Departamento
     if ($request->filled('search')) {
         $query->where('name', 'like', '%' . $request->search . '%');
     }
 
-    // 🏢 Filtro 2: Filtrar por Empresa (Relación Muchos a Muchos)
     if ($request->filled('company_id')) {
         $query->whereHas('companies', function ($q) use ($request) {
             $q->where('companies.id', $request->company_id);
         });
     }
 
-    // Paginación limpia manteniendo los filtros activos
     $departments = $query->orderBy('name')
         ->paginate(10)
         ->withQueryString();
 
-    // Traemos todas las empresas para llenar el <select> en la vista
     $companies = Company::orderBy('name')->get();
 
     return view('departments.index', compact('departments', 'companies'));
@@ -66,13 +61,12 @@ public function create(): View
 {
     $validated = $request->validate([
         'name'        => ['required', 'string', 'max:255', 'unique:departments,name'],
-        'companies'   => ['nullable', 'array'], // 👈 Validamos el array de empresas
+        'companies'   => ['nullable', 'array'],
         'companies.*' => ['exists:companies,id'],
     ]);
 
     $department = Department::create($validated);
 
-    // 🔗 Sincronizamos en la tabla pivote
     if ($request->has('companies')) {
         $department->companies()->sync($request->companies);
     }
@@ -97,13 +91,12 @@ public function create(): View
 {
     $validated = $request->validate([
         'name'        => ['required', 'string', 'max:255', 'unique:departments,name,' . $department->id],
-        'companies'   => ['nullable', 'array'], // 👈 Validamos el array
+        'companies'   => ['nullable', 'array'], 
         'companies.*' => ['exists:companies,id'],
     ]);
 
     $department->update($validated);
 
-    // 🔄 Actualizamos relaciones
     $department->companies()->sync($request->input('companies', []));
 
     return redirect()->route('departments.index')->with('success', 'Departamento actualizado correctamente.');

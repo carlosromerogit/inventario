@@ -5,17 +5,14 @@
 
 @section('content')
 
-    {{-- 🔎 SECCIÓN DE FILTRO ÚNICO --}}
     <div class="bg-white rounded-lg border border-slate-200 shadow-sm p-4 mb-6">
         <form action="{{ route('brands.index') }}" method="GET" class="flex flex-col sm:flex-row items-end gap-4">
             
-            {{-- BUSCAR --}}
             <div class="flex-1 w-full">
                 <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Buscar Marca</label>
                 <input type="text" name="search" autocomplete="off" value="{{ request('search') }}" placeholder="Escribe el nombre de la marca (Ej. Dell, HP)..." class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
             </div>
 
-            {{-- BOTONES --}}
             <div class="flex justify-end gap-2 w-full sm:w-auto">
                 @if(request()->filled('search'))
                     <a href="{{ route('brands.index') }}" class="rounded-md bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-200 text-center">
@@ -40,7 +37,6 @@
         <span class="font-semibold">Éxito:</span> {{ session('success') }}
     </div>
 @endif
-    {{-- 📊 HEADER --}}
     <div class="flex items-center justify-between mb-6">
         <p class="text-sm text-slate-500">{{ $brands->total() }} marcas encontradas</p>
         
@@ -49,7 +45,6 @@
         </x-button-secondary>
     </div>
 
-    {{-- 📋 TABLA --}}
     <div class="bg-white rounded-lg border border-slate-200 overflow-hidden">
         <table class="min-w-full divide-y divide-slate-200">
             <thead class="bg-slate-50">

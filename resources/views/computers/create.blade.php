@@ -10,7 +10,6 @@
 
     <div class="space-y-6">
 
-        {{-- ================= DATOS ================= --}}
         <div class="bg-white rounded-lg border border-slate-200 p-6 shadow-xs">
             <h2 class="text-sm font-semibold text-slate-700 mb-5">Datos del equipo</h2>
 
@@ -20,14 +19,12 @@
 
                 {{-- <x-select name="brand_model_id" label="Marca / Modelo" :options="$brandModels->pluck('name','id')" required /> --}}
                     
-              {{-- 💻 SELECT: MARCA / MODELO (CREAR) --}}
 <div>
     <label class="block text-sm font-medium text-slate-700 mb-1">Marca / Modelo *</label>
     <select name="brand_model_id" required 
         class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500 bg-white @error('brand_model_id') border-red-500 @enderror">
         <option value="">Selecciona el modelo del equipo</option>
         
-        {{-- Agrupamos la colección de modelos por el nombre de su marca --}}
         @foreach($brandModels->groupBy('brand.name') as $brandName => $models)
             <optgroup label="{{ $brandName }}">
                 @foreach($models as $model)
@@ -55,8 +52,6 @@
 
                 <x-select name="company_id" label="Empresa"
                           :options="$companies->pluck('name','id')" /> --}}
-{{-- 🏭 UNIFICADO: EMPRESA / DEPARTAMENTO --}}
-{{-- 1. Selector de UBICACIÓN (Empresa / Departamento) --}}
 <div>
     <label class="block text-sm font-medium text-slate-700 mb-1">Empresa / Departamento del Equipo *</label>
     <select name="company_and_department" required 
@@ -74,7 +69,6 @@
     </select>
 </div>
 
-{{-- 2. Selector de EMPLEADO (Inicia vacío y espera a la Ubicación) --}}
 <div>
     <label class="block text-sm font-medium text-slate-700 mb-1">Empleado asignado</label>
     <select name="employee_id" id="employee_select"
@@ -93,14 +87,13 @@
         class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm bg-white">
         <option value="">Selecciona primero una Empresa / Departamento</option>
         
-        {{-- Si es el EDIT, puedes dejar cargados los empleados de la ubicación actual --}}
         @if(isset($computer) && $computer->employee)
             @foreach($employees as $e)
                         @if($e->company_id == $computer->company_id && $e->department_id == $computer->department_id)
                 <option value="{{ $e->id }}" {{ $computer->employee_id == $e->id ? 'selected' : '' }}>
                     {{ $e->last_name }}, {{ $e->first_name }}
                 </option>
-            @endif {{-- ← Aquí: Cambiado de @endendif a @endif --}}
+            @endif 
             @endforeach
         @endif
     </select>
@@ -120,7 +113,6 @@
             </div>
         </div>
 
-   {{-- ================= DISCOS ================= --}}
 <div class="bg-white rounded-lg border border-slate-200 p-6 shadow-xs">
 
     <div class="flex items-center justify-between mb-5">
@@ -139,7 +131,6 @@
         Sin discos agregados
     </p>
 </div>
-        {{-- ================= IMÁGENES ================= --}}
         <div class="bg-white rounded-lg border border-slate-200 p-6 shadow-xs">
 
             <div class="flex items-center justify-between mb-4">
@@ -162,7 +153,6 @@
             </p>
         </div>
 
-        {{-- ================= BOTONES ================= --}}
         <div class="flex gap-3">
             <button class="bg-indigo-600 text-white px-4 py-2 rounded-md">
                 Guardar equipo
@@ -177,7 +167,6 @@
     </div>
 </form>
 
-{{-- ================= JS DISCOS ================= --}}
 <script>
 let driveIndex = 0;
 
@@ -246,9 +235,6 @@ function removeDrive(button) {
     }
 
 }
-/* ===========================================================
-|  IMÁGENES
-=========================================================== */
 
 let selectedFiles = [];
 
@@ -351,38 +337,28 @@ function syncFiles() {
 
     document.getElementById('images-input').files = dt.files;
 }
-/* ===========================================================
-|  REACTIVIDAD LÓGICA: EMPLEADO <=> ESTADO
-=========================================================== */
 document.addEventListener('DOMContentLoaded', function () {
     const employeeSelect = document.querySelector('select[name="employee_id"]');
     const statusSelect = document.querySelector('select[name="status"]');
 
     if (employeeSelect && statusSelect) {
         
-        // 1. Cuando cambia el selector de EMPLEADO
         employeeSelect.addEventListener('change', function () {
             if (this.value !== "") {
-                // Si seleccionan un empleado, forzamos el estado a 'assigned'
                 statusSelect.value = 'assigned';
             } else {
-                // Si quitan el empleado, lo ideal es regresarlo a 'stock'
                 if (statusSelect.value === 'assigned') {
                     statusSelect.value = 'stock';
                 }
             }
         });
 
-        // 2. Cuando cambia el selector de ESTADO
         statusSelect.addEventListener('change', function () {
             if (this.value === 'stock' || this.value === 'faulty' || this.value === 'obsolete') {
-                // Si se va a stock, averiado u obsoleto, no puede tener dueño asignado
                 if (this.value === 'stock') {
                     employeeSelect.value = "";
                 }
             } else if (this.value === 'assigned') {
-                // Si cambian manualmente el estado a 'Asignado' pero no hay empleado,
-                // podemos abrir el select o dejar la alerta visual para que lo elijan
                 if (employeeSelect.value === "") {
                     employeeSelect.focus();
                 }
@@ -391,23 +367,19 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 
-/* ===========================================================
-|  SELECTS DEPENDIENTES: EMPRESA/DEP => EMPLEADOS
-=========================================================== */
 document.addEventListener('DOMContentLoaded', function () {
     const locationSelect = document.querySelector('select[name="company_and_department"]');
     const employeeSelect = document.getElementById('employee_select');
 
     if (locationSelect && employeeSelect) {
         locationSelect.addEventListener('change', function () {
-            const combinedValue = this.value; // Ej: "1-3"
+            const combinedValue = this.value; 
 
             if (!combinedValue) {
                 employeeSelect.innerHTML = '<option value="">Selecciona primero una Empresa / Departamento</option>';
                 return;
             }
 
-            // Petición al servidor para traer los empleados de esa empresa-departamento
             fetch(`/api/employees-by-location?location=${combinedValue}`)
                 .then(response => response.json())
                 .then(employees => {

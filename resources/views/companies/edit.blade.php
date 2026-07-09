@@ -11,7 +11,6 @@
 
             <x-input name="name" label="Nombre de la empresa" :value="$company->name" autocomplete="off" required />
 
-            {{-- 🛠️ Corregido name="name" por name="RNC" --}}
             <x-input name="RNC" label="RNC de la empresa" :value="$company->RNC" autocomplete="off" required />
 
             <x-input name="address" label="Dirección (opcional)" :value="$company->address" autocomplete="off" />
@@ -21,7 +20,6 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto p-3 border border-slate-200 rounded-md bg-slate-50">
                     @forelse($departments as $dept)
                         @php
-                            // Comprobamos si el checkbox debe estar marcado (por old input o por relación de BD)
                             $isChecked = is_array(old('departments')) 
                                 ? in_array($dept->id, old('departments')) 
                                 : $company->departments->contains($dept->id);

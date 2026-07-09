@@ -18,7 +18,6 @@
 
             <div class="grid grid-cols-2 gap-5">
 
-                {{-- Nombre --}}
                 <x-input
                     name="name"
                     label="Nombre completo"
@@ -26,7 +25,6 @@
                     required
                 />
 
-                {{-- Usuario --}}
                 <x-input
                     name="username"
                     label="Usuario"
@@ -34,16 +32,14 @@
                     required
                 />
 
-                {{-- Email --}}
-                <x-input
+                {{-- <x-input
                     name="email"
                     type="email"
                     label="Correo electrónico"
                     :value="old('email', $user->email)"
                     required
-                />
+                /> --}}
 
-                {{-- Rol --}}
                 <x-select
                     name="role"
                     label="Rol"
@@ -52,14 +48,12 @@
                     required
                 />
 
-                {{-- Password --}}
                 <x-input
                     name="password"
                     type="password"
                     label="Nueva contraseña"
                 />
 
-                {{-- Confirmación --}}
                 <x-input
                     name="password_confirmation"
                     type="password"

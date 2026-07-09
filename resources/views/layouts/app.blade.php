@@ -19,69 +19,68 @@
             </div>
 
             <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-6">
+                <div>
+                    <p class="px-3 text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">General</p>
+                    <x-nav-link :route="'dashboard'" :active="request()->routeIs('dashboard')">
+                        Panel de Control
+                    </x-nav-link>
+                </div>
 
-    <div>
-        <p class="px-3 text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">General</p>
-        <x-nav-link :route="'dashboard'" :active="request()->routeIs('dashboard')">
-            Panel de Control
-        </x-nav-link>
-    </div>
+                <div>
+                    <p class="px-3 text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Inventario</p>
+                    <x-nav-link :route="'computers.index'" :active="request()->routeIs('computers.*')">
+                        Computadoras
+                    </x-nav-link>
+                </div>
 
-    <div>
-        <p class="px-3 text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Inventario</p>
-        <x-nav-link :route="'computers.index'" :active="request()->routeIs('computers.*')">
-            Computadoras
-        </x-nav-link>
-    </div>
+                <div>
+                    <p class="px-3 text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Directorio</p>
 
-    <div>
-        <p class="px-3 text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Directorio</p>
+                    <x-nav-link :route="'employees.index'" :active="request()->routeIs('employees.*')">
+                        Empleados
+                    </x-nav-link>
 
-        <x-nav-link :route="'employees.index'" :active="request()->routeIs('employees.*')">
-            Empleados
-        </x-nav-link>
+                    <x-nav-link :route="'departments.index'" :active="request()->routeIs('departments.*')">
+                        Departamentos
+                    </x-nav-link>
 
-        <x-nav-link :route="'departments.index'" :active="request()->routeIs('departments.*')">
-            Departamentos
-        </x-nav-link>
+                    <x-nav-link :route="'companies.index'" :active="request()->routeIs('companies.*')">
+                        Empresas
+                    </x-nav-link>
+                </div>
 
-        <x-nav-link :route="'companies.index'" :active="request()->routeIs('companies.*')">
-            Empresas
-        </x-nav-link>
-    </div>
+                <div>
+                    <p class="px-3 text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Catálogos</p>
 
-    <div>
-        <p class="px-3 text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Catálogos</p>
+                    <x-nav-link :route="'brands.index'" :active="request()->routeIs('brands.*')">
+                        Marcas
+                    </x-nav-link>
 
-        <x-nav-link :route="'brands.index'" :active="request()->routeIs('brands.*')">
-            Marcas
-        </x-nav-link>
+                    <x-nav-link :route="'brand-models.index'" :active="request()->routeIs('brand-models.*')">
+                        Modelos
+                    </x-nav-link>
 
-        <x-nav-link :route="'brand-models.index'" :active="request()->routeIs('brand-models.*')">
-            Modelos
-        </x-nav-link>
+                    <x-nav-link :route="'drive-types.index'" :active="request()->routeIs('drive-types.*')">
+                        Tipos de disco
+                    </x-nav-link>
 
-        <x-nav-link :route="'drive-types.index'" :active="request()->routeIs('drive-types.*')">
-            Tipos de disco
-        </x-nav-link>
+                    <x-nav-link :route="'operating-systems.index'" :active="request()->routeIs('operating-systems.*')">
+                        Sistemas operativos
+                    </x-nav-link>
+                </div>
 
-        <x-nav-link :route="'operating-systems.index'" :active="request()->routeIs('operating-systems.*')">
-            Sistemas operativos
-        </x-nav-link>
-    </div>
-@can('users.index')
-<div>
-    <p class="px-3 text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">
-        Administrador
-    </p>
+                @can('users.index')
+                <div>
+                    <p class="px-3 text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">
+                        Administrador
+                    </p>
 
-    <x-nav-link :route="'users.index'" :active="request()->routeIs('users.*')">
-        Usuarios
-    </x-nav-link>
-</div>
-@endcan
-
-</nav>
+                    <x-nav-link :route="'users.index'" :active="request()->routeIs('users.*')">
+                        Usuarios
+                    </x-nav-link>
+                </div>
+                @endcan
+            </nav>
         </aside>
 
         <div class="flex-1 flex flex-col min-w-0 overflow-x-hidden">
@@ -93,8 +92,12 @@
                 
                 <div class="flex items-center gap-4">
                     <div class="text-right">
-                        <p class="text-sm font-medium text-slate-800">{{ Auth::user()->name }}</p>
-                        <p class="text-xs text-slate-400 font-mono">@<span>{{ Auth::user()->username }}</span></p>
+                        <p class="text-sm font-medium text-slate-800">
+                            {{ Auth::user()?->name ?? 'Usuario de Sistema' }}
+                        </p>
+                        @if(Auth::user())
+                            <p class="text-xs text-slate-400 font-mono">@<span>{{ Auth::user()->username }}</span></p>
+                        @endif
                     </div>
                     
                     <div class="h-6 w-px bg-slate-200"></div>
@@ -118,7 +121,7 @@
                     @if (session('success'))
                         <div class="mb-6 rounded-md bg-emerald-50 border border-emerald-200 px-4 py-3 text-sm text-emerald-800 flex items-center justify-between">
                             <div class="flex items-center gap-2">
-                                <span>✅</span>
+                                <span></span>
                                 <span>{{ session('success') }}</span>
                             </div>
                         </div>
@@ -127,7 +130,7 @@
                     @if ($errors->any())
                         <div class="mb-6 rounded-md bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-800">
                             <p class="font-medium mb-1 flex items-center gap-2">
-                                <span>⚠️</span>
+                                <span></span>
                                 <span>Revisa los siguientes errores:</span>
                             </p>
                             <ul class="list-disc list-inside space-y-0.5 ml-4">

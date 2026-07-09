@@ -5,13 +5,11 @@
 
 @section('content')
 
-{{-- ===================== FILTROS ===================== --}}
 <div class="bg-white rounded-lg border border-slate-200 shadow-sm p-4 mb-6">
     <form action="{{ route('computers.index') }}" method="GET" class="space-y-4">
 
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-6">
 
-            {{-- BUSCAR --}}
             <div>
                 <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Buscar</label>
                 <input type="text"
@@ -22,7 +20,6 @@
                        class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
             </div>
 
-            {{-- MARCA --}}
             {{-- <div>
                 <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Marca</label>
                 <select name="brand_id" class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
@@ -81,7 +78,6 @@
                     class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
             </div>
 
-             {{-- EMPRESA --}}
             {{-- <div>
                 <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Empresa</label>
                 <select name="company_id" class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
@@ -94,7 +90,6 @@
                 </select>
             </div> --}}
 
-            {{-- DEPARTAMENTO --}}
             {{-- <div>
                 <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Departamento</label>
                 <select name="department_id" class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
@@ -107,31 +102,29 @@
                 </select>
             </div> --}}
 
-           <div>
-    <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Empresa / Departamento</label>
-    <select name="company_or_department" class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
-        <option value="">Todos</option>
-        
-        @foreach($companies as $company)
-            <optgroup label="{{ $company->name }}">
-                <option value="company_{{ $company->id }}" {{ request('company_or_department') == 'company_' . $company->id ? 'selected' : '' }}>
-                    {{ $company->name }} (Toda la Empresa)
-                </option>
-                @foreach($company->departments as $dept)
-                    @php
-                        // Creamos el string del valor actual para compararlo limpiamente
-                        $currentValue = 'comp_' . $company->id . '_dept_' . $dept->id;
-                    @endphp
-                    <option value="{{ $currentValue }}" {{ request('company_or_department') == $currentValue ? 'selected' : '' }}>
-                        {{ $company->name }} — {{ $dept->name }}
-                    </option>
+        <div>
+            <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Empresa / Departamento</label>
+            <select name="company_or_department" class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
+                <option value="">Todos</option>
+                
+                @foreach($companies as $company)
+                    <optgroup label="{{ $company->name }}">
+                        <option value="company_{{ $company->id }}" {{ request('company_or_department') == 'company_' . $company->id ? 'selected' : '' }}>
+                            {{ $company->name }} (Toda la Empresa)
+                        </option>
+                        @foreach($company->departments as $dept)
+                            @php
+                                $currentValue = 'comp_' . $company->id . '_dept_' . $dept->id;
+                            @endphp
+                            <option value="{{ $currentValue }}" {{ request('company_or_department') == $currentValue ? 'selected' : '' }}>
+                                {{ $company->name }} — {{ $dept->name }}
+                            </option>
+                        @endforeach
+                    </optgroup>
                 @endforeach
-            </optgroup>
-        @endforeach
-    </select>
-</div>
+            </select>
+        </div>
 
-            {{-- SISTEMA OPERATIVO --}}
             <div>
                 <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">S.O.</label>
                 <select name="operating_system_id" class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
@@ -144,7 +137,6 @@
                 </select>
             </div>
 
-            {{-- ESTADO --}}
             <div>
                 <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Estado</label>
                 <select name="status" class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
@@ -271,7 +263,6 @@
 
 </div>
 
-        {{-- BOTONES --}}
         <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
 @if(request()->except('page'))
     <a href="{{ route('computers.index') }}"
@@ -289,14 +280,12 @@
     </form>
 </div>
 
-{{-- ===================== HEADER ===================== --}}
 <div class="flex items-center justify-between mb-6">
     <p class="text-sm text-slate-500">
         {{ $computers->total() }} equipos encontrados
     </p>
 
     <div class="flex items-center gap-2">
-        {{-- 🔥 NUEVO: Botón de Exportar (Mantiene los filtros activos de la URL) --}}
     <a href="{{ route('computers.index', array_merge(request()->all(), ['export' => 'pdf'])) }}"
     class="inline-flex items-center rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-500">
         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -311,7 +300,6 @@
     </div>
 </div>
 
-{{-- ===================== TABLA ===================== --}}
 <div class="bg-white rounded-lg border border-slate-200 overflow-hidden shadow-sm">
 
     <table class="min-w-full divide-y divide-slate-200">
@@ -332,7 +320,6 @@
             @forelse ($computers as $computer)
                 <tr class="hover:bg-slate-50">
 
-                    {{-- SERIAL --}}
                     <td class="px-6 py-4 font-mono text-sm">
                         <a href="{{ route('computers.show', $computer) }}"
                            class="text-indigo-600 hover:text-indigo-800">
@@ -340,24 +327,20 @@
                         </a>
                     </td>
 
-                    {{-- MODELO --}}
                     <td class="px-6 py-4 text-sm text-slate-700">
                         {{ $computer->brandModel->brand->name }} {{ $computer->brandModel->name }}
                     </td>
 
-                    {{-- EMPLEADO --}}
                     <td class="px-6 py-4 text-sm text-slate-600">
                         {{ $computer->employee
                             ? $computer->employee->first_name . ' ' . $computer->employee->last_name
                             : '—' }}
                     </td>
 
-                    {{-- EMPRESA --}}
                     <td class="px-6 py-4 text-sm text-slate-600">
                         {{ $computer->company?->name ?? '—' }}
                     </td>
 
-                    {{-- ESTADO --}}
                     <td class="px-6 py-4 text-sm">
 
                         @switch($computer->status)
@@ -385,7 +368,6 @@
 
                     </td>
 
-                    {{-- ACCIONES --}}
                     <td class="px-6 py-4 text-right space-x-3 text-sm">
                         <a href="{{ route('computers.show', $computer) }}" class="text-slate-600 hover:text-indigo-600">Ver</a>
                         <a href="{{ route('computers.edit', $computer) }}" class="text-indigo-600 hover:text-indigo-800">Editar</a>
@@ -416,7 +398,6 @@
     </table>
 </div>
 
-{{-- ===================== PAGINACIÓN ===================== --}}
 <div class="mt-4">
     {{ $computers->links() }}
 </div>

@@ -48,7 +48,6 @@ class CompanyController extends Controller implements HasMiddleware
 
     public function create(): View
     {
-        // Obtenemos todos los departamentos para que el usuario pueda seleccionarlos
         $departments = Department::orderBy('name')->get();
         
         return view('companies.create', compact('departments'));
@@ -60,14 +59,12 @@ public function store(Request $request): RedirectResponse
         'name'          => ['required', 'string', 'unique:companies,name', 'max:255'],
         'address'       => ['nullable', 'string', 'max:500'],
         'RNC'           => ['nullable', 'string', 'max:50'],
-        'departments'   => ['nullable', 'array'], // 👈 Validamos que llegue un array de IDs
-        'departments.*' => ['exists:departments,id'], // Cada ID debe existir
+        'departments'   => ['nullable', 'array'],
+        'departments.*' => ['exists:departments,id'],
     ]);
 
-    // Creamos la empresa
     $company = Company::create($validated);
 
-    // 🔗 Sincronizamos los departamentos en la tabla pivote
     if ($request->has('departments')) {
         $company->departments()->sync($request->departments);
     }
@@ -87,7 +84,6 @@ public function edit(Company $company): View
 {
     $departments = Department::orderBy('name')->get();
     
-    // Cargamos la relación actual para saber cuáles tiene asignados
     $company->load('departments');
 
     return view('companies.edit', compact('company', 'departments'));
@@ -98,13 +94,12 @@ public function edit(Company $company): View
         'name'          => ['required', 'string', 'max:255', Rule::unique('companies', 'name')->ignore($company->id)],
         'address'       => ['nullable', 'string', 'max:500'],
         'RNC'           => ['nullable', 'string', 'max:50'],
-        'departments'   => ['nullable', 'array'], // 👈 Validamos el array
+        'departments'   => ['nullable', 'array'], 
         'departments.*' => ['exists:departments,id'],
     ]);
 
     $company->update($validated);
 
-    // 🔄 Sincronizamos (esto añade los nuevos y remueve los que se desmarcaron)
     $company->departments()->sync($request->input('departments', []));
 
     return redirect()

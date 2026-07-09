@@ -10,7 +10,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\View\View;
-use Illuminate\Validation\Rule;
+
 class EmployeeController extends Controller implements HasMiddleware
 {
     public static function middleware(): array
@@ -31,7 +31,6 @@ class EmployeeController extends Controller implements HasMiddleware
 {
     $query = Employee::with(['department', 'company', 'computers']);
 
-    // 🔎 Búsqueda por nombre o apellido
     if ($request->filled('search')) {
         $search = $request->input('search');
         $query->where(function ($q) use ($search) {
@@ -40,28 +39,22 @@ class EmployeeController extends Controller implements HasMiddleware
         });
     }
 
-    // 🆔 Código de empleado
     if ($request->filled('employee_code')) {
         $query->where('employee_code', 'like', '%' . $request->employee_code . '%');
     }
 
-    // 🕒 Turno de trabajo
     if ($request->filled('work_shift')) {
         $query->where('work_shift', $request->input('work_shift'));
     }
 
-    // ⚙️ FILTRO UNIFICADO (EMPRESA / DEPARTAMENTO)
     if ($request->filled('company_or_department')) {
         $filterValue = $request->input('company_or_department');
 
         if (str_starts_with($filterValue, 'company_')) {
-            // Caso 1: Se seleccionó "Toda la Empresa" -> company_X
             $companyId = str_replace('company_', '', $filterValue);
             $query->where('company_id', $companyId);
             
         } elseif (str_starts_with($filterValue, 'comp_')) {
-            // Caso 2: Se seleccionó una combinación -> comp_X_dept_Y
-            // Parseamos los IDs usando expresiones regulares o explode
             if (preg_match('/comp_(\d+)_dept_(\d+)/', $filterValue, $matches)) {
                 $companyId = $matches[1];
                 $departmentId = $matches[2];
@@ -72,7 +65,6 @@ class EmployeeController extends Controller implements HasMiddleware
         }
     }
 
-    // 💻 Equipos asignados
     if ($request->filled('has_computer')) {
         if ($request->input('has_computer') === 'yes') {
             $query->has('computers');
@@ -85,7 +77,6 @@ class EmployeeController extends Controller implements HasMiddleware
         ->paginate(10)
         ->withQueryString();
 
-    // Importante: Cargamos las empresas con sus departamentos para el <select>
     $companies = Company::with('departments')->orderBy('name')->get();
 
     return view('employees.index', compact('employees', 'companies'));
@@ -101,7 +92,6 @@ class EmployeeController extends Controller implements HasMiddleware
 
     public function store(Request $request)
 {
-    // ⚙️ Separar el valor combinado si viene en el request
     if ($request->filled('company_and_department')) {
         $parts = explode('-', $request->input('company_and_department'));
         if (count($parts) === 2) {
@@ -112,20 +102,17 @@ class EmployeeController extends Controller implements HasMiddleware
         }
     }
 
-        // A partir de aquí tu validación actual funcionará de manera transparente:
-    $validated = $request->validate([
-        'first_name' => 'required|string|max:255',
-        'last_name' => 'required|string|max:255',
-        'company_id' => 'required|exists:companies,id',
-        'department_id' => 'required|exists:departments,id',
-        
-        // 💡 AGREGA ESTO (puedes usar 'nullable' si en tu formulario es opcional, 
-        // pero lee abajo si la base de datos te obliga a que sea obligatorio)
-        'employee_code' => 'required|string|max:50|unique:employees,employee_code', 
-        'email' => 'nullable|email|max:255',
-        'extension' => 'nullable|string',
-        'work_shift' => 'nullable|string',
-    ]);
+        $validated = $request->validate([
+            'first_name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'company_id' => 'required|exists:companies,id',
+            'department_id' => 'required|exists:departments,id',
+            
+            'employee_code' => 'required|string|max:50|unique:employees,employee_code', 
+            'email' => 'nullable|email|max:255',
+            'extension' => 'nullable|string',
+            'work_shift' => 'nullable|string',
+        ]);
 
     Employee::create($validated);
 
@@ -160,12 +147,15 @@ class EmployeeController extends Controller implements HasMiddleware
         }
     }
 
-    $validated = $request->validate([
-        'first_name' => 'required|string|max:255',
-        'last_name' => 'required|string|max:255',
-        'company_id' => 'required|exists:companies,id',
+  $validated = $request->validate([
+        'first_name'    => 'required|string|max:255',
+        'last_name'     => 'required|string|max:255',
+        'company_id'    => 'required|exists:companies,id',
         'department_id' => 'required|exists:departments,id',
-        // ... el resto de tus validaciones normales
+        'employee_code' => 'nullable|string|max:50',
+        'email'         => 'nullable|email|max:255',
+        'extension'     => 'nullable|string|max:20',
+        'work_shift'    => 'nullable|string|in:morning/afternoon,night',
     ]);
 
     $employee->update($validated);

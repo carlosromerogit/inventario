@@ -16,7 +16,6 @@
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {{-- 📊 INFORMACIÓN GENERAL --}}
         <div class="bg-white rounded-lg border border-slate-200 p-6 md:col-span-1 h-fit">
             <h3 class="text-sm font-bold text-slate-700 mb-4 uppercase tracking-wider">Datos de la Empresa</h3>
             <dl class="space-y-4">
@@ -44,7 +43,6 @@
             </dl>
         </div>
 
-        {{-- 🏬 DEPARTAMENTOS ASOCIADOS --}}
         <div class="bg-white rounded-lg border border-slate-200 p-6 md:col-span-2">
             <h3 class="text-sm font-bold text-slate-700 mb-2 uppercase tracking-wider">Departamentos Habilitados</h3>
             <p class="text-xs text-slate-400 mb-4">Áreas operativas asociadas a esta sucursal o razón social.</p>

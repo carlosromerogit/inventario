@@ -10,13 +10,11 @@
 
     <div class="space-y-6">
 
-        {{-- ================= DATOS ================= --}}
         <div class="bg-white rounded-lg border border-slate-200 p-6">
             <h2 class="text-sm font-semibold text-slate-700 mb-5">Datos del equipo</h2>
 
             <div class="grid grid-cols-2 gap-5">
 
-                {{-- 💻 SELECT: MARCA / MODELO (EDITAR) --}}
 <div>
     <label class="block text-sm font-medium text-slate-700 mb-1">Marca / Modelo *</label>
     <select name="brand_model_id" required 
@@ -64,7 +62,6 @@
                     :selected="old('operating_system_id', $computer->operating_system_id)" />
 
 
-                    {{-- 🏭 UNIFICADO: EMPRESA / DEPARTAMENTO --}}
 <div>
     <label class="block text-sm font-medium text-slate-700 mb-1">Empresa / Departamento del Equipo *</label>
     <select name="company_and_department" required 
@@ -104,29 +101,24 @@
                     :options="$companies->pluck('name', 'id')"
                     :selected="old('company_id', $computer->company_id)" /> --}}
 
- {{-- 👥 SELECT: EMPLEADO (Solución Definitiva para EDIT) --}}
 <div>
     <label class="block text-sm font-medium text-slate-700 mb-1">Empleado asignado</label>
     <select name="employee_id" id="employee_select"
         class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm bg-white focus:border-indigo-500 focus:ring-indigo-500">
         <option value="">Sin asignar</option>
         
-        {{-- 1. Si el equipo ya tiene un empleado asignado, lo mostramos y seleccionamos por defecto --}}
         @if($computer->employee)
             <option value="{{ $computer->employee_id }}" selected>
                 {{ $computer->employee->last_name }}, {{ $computer->employee->first_name }}
             </option>
         @endif
 
-        {{-- 2. Listamos el resto de los empleados que pertenecen a la MISMA empresa y departamento --}}
         @foreach($employees as $e)
             @php
-                // Determinamos la empresa y departamento a comparar (priorizando lo que venga de old() si hubo un error de validación)
                 $currentCompanyId = old('company_id', $computer->company_id);
                 $currentDeptId = old('department_id', $computer->department_id);
             @endphp
 
-            {{-- Filtramos para mostrar solo compañeros de la misma área, evitando duplicar al empleado seleccionado arriba --}}
             @if($e->id !== $computer->employee_id && $e->company_id == $currentCompanyId && $e->department_id == $currentDeptId)
                 <option value="{{ $e->id }}" {{ old('employee_id') == $e->id ? 'selected' : '' }}>
                     {{ $e->last_name }}, {{ $e->first_name }}
@@ -143,7 +135,6 @@
                    <x-input name="fixed_asset" label="Activo fijo" autocomplete="off"
                     :value="old('fixed_asset', $computer->fixed_asset)" />
 
-                   {{-- 🔥 NUEVO: ESTADO --}}
                 <x-select name="status" label="Estado"
                     :options="[
                          'stock' => 'En stock',
@@ -156,9 +147,6 @@
             </div>
         </div>
 
-        {{-- ================= DISCOS ================= --}}
-
-        {{-- ================= DISCOS ================= --}}
 <div class="bg-white rounded-lg border border-slate-200 p-6 shadow-xs">
 
     <div class="flex items-center justify-between mb-5">
@@ -171,7 +159,6 @@
         </button>
     </div>
 
-    {{-- Discos ya instalados --}}
     @if($computer->drives->isNotEmpty())
         <div class="mb-6 space-y-3">
 
@@ -214,7 +201,6 @@
         </div>
     @endif
 
-    {{-- Discos nuevos --}}
     <div id="drives-container" class="space-y-3"></div>
 
     <p id="drives-empty" class="text-sm text-slate-400 text-center py-4">
@@ -223,7 +209,6 @@
 
 </div>
  
-        {{-- ================= IMÁGENES ================= --}}
         <div class="bg-white rounded-lg border border-slate-200 p-6">
             <h2 class="text-sm font-semibold text-slate-700 mb-4">Imágenes del equipo</h2>
 
@@ -263,7 +248,6 @@
             </p>
         </div>
 
-        {{-- ================= BOTONES ================= --}}
         <div class="flex gap-3">
             <button class="bg-indigo-600 text-white px-4 py-2 rounded-md">
                 Guardar cambios
@@ -277,7 +261,6 @@
 
     </div>
 </form>
-{{-- Formularios para eliminar discos --}}
 @foreach($computer->drives as $drive)
 <form id="delete-drive-{{ $drive->id }}"
       action="{{ route('drives.destroy', $drive) }}"
@@ -301,9 +284,6 @@
 </form>
 @endforeach
 <script>
-/* ===========================================================
-|  DISCOS
-=========================================================== */
 
 let driveIndex = 0;
 
@@ -380,9 +360,6 @@ function removeDrive(button) {
 }
 
 
-/* ===========================================================
-|  IMÁGENES
-=========================================================== */
 
 let selectedFiles = [];
 
@@ -493,37 +470,28 @@ function syncFiles() {
 
     document.getElementById('images-input').files = dt.files;
 }
-/* ===========================================================
-|  REACTIVIDAD LÓGICA: EMPLEADO <=> ESTADO (EDICIÓN)
-=========================================================== */
 document.addEventListener('DOMContentLoaded', function () {
     const employeeSelect = document.querySelector('select[name="employee_id"]');
     const statusSelect = document.querySelector('select[name="status"]');
 
     if (employeeSelect && statusSelect) {
         
-        // 1. Cuando cambia el selector de EMPLEADO
         employeeSelect.addEventListener('change', function () {
             if (this.value !== "") {
-                // Si seleccionan un empleado, forzamos el estado a 'assigned'
                 statusSelect.value = 'assigned';
             } else {
-                // Si quitan el empleado y estaba como 'assigned', lo regresamos a 'stock'
                 if (statusSelect.value === 'assigned') {
                     statusSelect.value = 'stock';
                 }
             }
         });
 
-        // 2. Cuando cambia el selector de ESTADO
         statusSelect.addEventListener('change', function () {
             if (this.value === 'stock' || this.value === 'faulty' || this.value === 'obsolete') {
-                // Si se cambia a stock, averiado u obsoleto, limpiamos el empleado
                 if (this.value === 'stock') {
                     employeeSelect.value = "";
                 }
             } else if (this.value === 'assigned') {
-                // Si cambian a 'Asignado' pero no hay empleado, le da el foco al select
                 if (employeeSelect.value === "") {
                     employeeSelect.focus();
                 }
@@ -531,9 +499,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 });
-/* ===========================================================
-|  LOGICA DE EDICIÓN: SELECTS DEPENDIENTES + ESTADOS
-=========================================================== */
 document.addEventListener('DOMContentLoaded', function () {
     const locationSelect = document.querySelector('select[name="company_and_department"]');
     const employeeSelect = document.getElementById('employee_select');
@@ -541,16 +506,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (locationSelect && employeeSelect && statusSelect) {
         
-        // 1. ESCUCHA CUANDO CAMBIA LA EMPRESA / DEPARTAMENTO
         locationSelect.addEventListener('change', function () {
-            const combinedValue = this.value; // Ej: "1-3"
+            const combinedValue = this.value; 
 
             if (!combinedValue) {
                 employeeSelect.innerHTML = '<option value="">Selecciona primero una Empresa / Departamento</option>';
                 return;
             }
 
-            // Pedimos al servidor los empleados de la nueva ubicación
             fetch(`/api/employees-by-location?location=${combinedValue}`)
                 .then(response => response.json())
                 .then(employees => {
@@ -563,8 +526,6 @@ document.addEventListener('DOMContentLoaded', function () {
                         employeeSelect.appendChild(option);
                     });
 
-                    // Al cambiar de ubicación, lo ideal es limpiar el empleado anterior 
-                    // y por ende regresar el estado a 'stock' temporalmente
                     employeeSelect.value = "";
                     if (statusSelect.value === 'assigned') {
                         statusSelect.value = 'stock';
@@ -573,7 +534,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 .catch(error => console.error('Error cargando empleados:', error));
         });
 
-        // 2. ESCUCHA CUANDO CAMBIA EL EMPLEADO (Lógica anterior)
         employeeSelect.addEventListener('change', function () {
             if (this.value !== "") {
                 statusSelect.value = 'assigned';
@@ -584,7 +544,6 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
 
-        // 3. ESCUCHA CUANDO CAMBIA EL ESTADO (Lógica anterior)
         statusSelect.addEventListener('change', function () {
             if (this.value === 'stock' || this.value === 'faulty' || this.value === 'obsolete') {
                 if (this.value === 'stock') {
