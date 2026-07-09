@@ -22,13 +22,13 @@
 
         <div class="col-span-2 space-y-6">
 
+            {{-- ESPECIFICACIONES DEL SISTEMA --}}
             <div class="bg-white border border-slate-200 rounded-lg shadow-sm p-6">
                 <h3 class="text-sm font-semibold text-slate-700 mb-4">
                     Especificaciones del Sistema
                 </h3>
 
                 <dl class="grid grid-cols-2 gap-x-4 gap-y-4">
-
                     <div>
                         <dt class="text-xs text-slate-400 uppercase">Marca / Modelo</dt>
                         <dd class="text-sm font-medium text-slate-900">
@@ -114,10 +114,10 @@
                             @endswitch
                         </dd>
                     </div>
-
                 </dl>
             </div>
 
+            {{-- INFORMACIÓN DE GARANTÍA --}}
             <div class="bg-white border border-slate-200 rounded-lg shadow-sm p-6">
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-sm font-semibold text-slate-700">Información de Garantía</h3>
@@ -174,6 +174,64 @@
                 @endif
             </div>
 
+            {{-- NUEVO BLOQUE: HISTORIAL / ESTADO DEL SERVICIO PRESTADO --}}
+            <div class="bg-white border border-slate-200 rounded-lg shadow-sm p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-sm font-semibold text-slate-700">Estado de Servicio Prestado</h3>
+                    @if($computer->loans->isNotEmpty())
+                        @php $latestLoan = $computer->loans->last(); @endphp
+                        @if(!$latestLoan->returned_at)
+                            <span class="inline-flex items-center rounded-md bg-amber-50 px-2 py-1 text-xs font-medium text-amber-800 ring-1 ring-inset ring-amber-600/20">En servicio prestado</span>
+                        @else
+                            <span class="inline-flex items-center rounded-md bg-slate-50 px-2 py-1 text-xs font-medium text-slate-600 ring-1 ring-inset ring-slate-500/10">Devuelto</span>
+                        @endif
+                    @endif
+                </div>
+
+                @if($computer->loans->isEmpty())
+                    <p class="text-sm text-slate-400 text-center py-4">Este equipo nunca ha sido prestado como servicio externo.</p>
+                @else
+                    {{-- Mostramos los detalles del préstamo actual o más reciente --}}
+                    <dl class="grid grid-cols-2 gap-x-4 gap-y-4">
+                        <div>
+                            <dt class="text-xs text-slate-400 uppercase">Prestamista</dt>
+                            <dd class="text-sm font-medium text-slate-900">
+                                {{ $latestLoan->borrower_last_name }}, {{ $latestLoan->borrower_first_name }}
+                            </dd>
+                        </div>
+
+                        <div>
+                            <dt class="text-xs text-slate-400 uppercase">Empresa / Institución destino</dt>
+                            <dd class="text-sm text-slate-900">{{ $latestLoan->borrower_company ?? '—' }}</dd>
+                        </div>
+
+                        <div>
+                            <dt class="text-xs text-slate-400 uppercase">Contacto</dt>
+                            <dd class="text-sm text-slate-600 space-y-0.5">
+                                @if($latestLoan->borrower_phone) <div>{{ $latestLoan->borrower_phone }}</div> @endif
+                                @if($latestLoan->borrower_email) <div>{{ $latestLoan->borrower_email }}</div> @endif
+                                @if(!$latestLoan->borrower_phone && !$latestLoan->borrower_email) <span>Sin contacto</span> @endif
+                            </dd>
+                        </div>
+
+                        <div>
+                            <dt class="text-xs text-slate-400 uppercase">Fecha y Hora de Entrega</dt>
+                            <dd class="text-sm text-slate-900 font-mono">
+                                {{ \Carbon\Carbon::parse($latestLoan->loaned_at)->format('d/m/Y H:i') }}
+                            </dd>
+                        </div>
+
+                        <div class="col-span-2 border-t border-slate-100 pt-3">
+                            <dt class="text-xs text-slate-400 uppercase mb-1">Razón o Motivo del Préstamo</dt>
+                            <dd class="text-sm text-slate-700 bg-slate-50 rounded-md p-3 border border-slate-100 italic">
+                                "{{ $latestLoan->reason }}"
+                            </dd>
+                        </div>
+                    </dl>
+                @endif
+            </div>
+
+            {{-- UNIDADES DE ALMACENAMIENTO --}}
             <div class="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
                 <div class="p-6 border-b border-slate-100">
                     <h3 class="text-sm font-semibold text-slate-700">
@@ -221,6 +279,7 @@
 
         <div class="space-y-6">
 
+            {{-- ASIGNADO --}}
             <div class="bg-white border border-slate-200 rounded-lg shadow-sm p-6">
                 <h3 class="text-sm font-semibold text-slate-700 mb-3">Asignado</h3>
 
@@ -232,6 +291,7 @@
                 </p>
             </div>
 
+            {{-- GALERÍA --}}
             <div class="bg-white border border-slate-200 rounded-lg shadow-sm p-6">
                 <h3 class="text-sm font-semibold text-slate-700 mb-4">
                     Galería
@@ -257,6 +317,7 @@
         </div>
     </div>
 
+    {{-- MODAL DE LA GALERÍA --}}
     <div id="galleryModal"
          class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 p-4 opacity-0 transition">
 

@@ -320,6 +320,12 @@ public function store(Request $request): RedirectResponse
         ]);
     }
 
+    if ($request->boolean('is_loaned') && !empty($validated['loan'])) {
+        // Guarda en equipment_loans asignando automáticamente:
+        // loanable_id = $computer->id  y  loanable_type = App\Models\Computer
+        $computer->loans()->create($validated['loan']);
+    }
+
     return redirect()->route('computers.index')
         ->with('success', 'Equipo creado correctamente.');
 }
@@ -402,6 +408,41 @@ public function store(Request $request): RedirectResponse
     }
     });
 
+        $loanStatus = $request->input('loan_status', 'none');
+
+        if ($loanStatus !== 'none') {
+            // Obtenemos los datos limpios del formulario
+            $loanData = [
+                'borrower_first_name' => $request->input('borrower_first_name'),
+                'borrower_last_name'  => $request->input('borrower_last_name'),
+                'borrower_company'    => $request->input('borrower_company'),
+                'borrower_phone'      => $request->input('borrower_phone'),
+                'borrower_email'      => $request->input('borrower_email'),
+                'loaned_at'           => $request->input('loaned_at'),
+                'reason'              => $request->input('loan_reason'),
+            ];
+
+            // Buscamos si el equipo ya tiene un último préstamo
+            $latestLoan = $computer->loans()->latest()->first();
+
+            if ($loanStatus === 'active') {
+                if ($latestLoan && !$latestLoan->returned_at) {
+                    // Si ya hay un préstamo activo, actualizamos sus datos
+                    $latestLoan->update(array_merge($loanData, ['returned_at' => null]));
+                } else {
+                    // Si no había préstamo o el último ya estaba devuelto, creamos uno nuevo activo
+                    $computer->loans()->create($loanData);
+                }
+            } elseif ($loanStatus === 'returned') {
+                if ($latestLoan) {
+                    // Si seleccionan devuelto, actualizamos los datos y marcamos la fecha de devolución si no la tiene
+                    $latestLoan->update(array_merge($loanData, [
+                        'returned_at' => $latestLoan->returned_at ?? now()
+                    ]));
+                }
+            }
+        }
+
     return redirect()
         ->route('computers.show', $computer)
         ->with('success', 'Equipo actualizado correctamente.');
@@ -448,6 +489,16 @@ private function validateComputer(Request $request, ?int $id = null): array
         'purchase_order_pdf'  => ['nullable', 'file', 'mimes:pdf', 'max:5120'],
         'warranty_start_date' => ['nullable', 'date'],
         'warranty_end_date'   => ['nullable', 'date', 'after_or_equal:warranty_start_date'],
+
+        'is_loaned'               => ['nullable', 'boolean'],
+        'loan'                    => ['nullable', 'array', 'required_if:is_loaned,1'],
+        'loan.reason'             => ['required_if:is_loaned,1', 'string'],
+        'loan.loaned_at'          => ['required_if:is_loaned,1', 'date'],
+        'loan.borrower_first_name'=> ['required_if:is_loaned,1', 'string', 'max:255'],
+        'loan.borrower_last_name' => ['required_if:is_loaned,1', 'string', 'max:255'],
+        'loan.borrower_company'   => ['required_if:is_loaned,1', 'string', 'max:255'],
+        'loan.borrower_phone'     => ['nullable', 'string', 'max:50'],
+        'loan.borrower_email'     => ['nullable', 'email', 'max:255'],
     ],
     [],
     [
@@ -474,6 +525,15 @@ private function validateComputer(Request $request, ?int $id = null): array
         'purchase_order_pdf'      => 'PDF de orden de compra',
         'warranty_start_date'     => 'inicio de garantía',
         'warranty_end_date'       => 'fin de garantía',
+
+        'is_loaned'                => '¿es un préstamo?',
+        'loan.reason'              => 'motivo del préstamo',
+        'loan.loaned_at'           => 'fecha de entrega del equipo',
+        'loan.borrower_first_name' => 'nombre del prestamista',
+        'loan.borrower_last_name'  => 'apellido del prestamista',
+        'loan.borrower_company'    => 'empresa del prestamista',
+        'loan.borrower_phone'      => 'teléfono del prestamista',
+        'loan.borrower_email'      => 'correo del prestamista',
     ]
     );
 }

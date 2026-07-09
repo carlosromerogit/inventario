@@ -113,6 +113,71 @@
             </div>
         </div>
 
+        <div class="form-group mb-4">
+    <div class="form-check">
+        <input class="form-check-input" type="checkbox" name="is_loaned" id="is_loaned" value="1" {{ old('is_loaned') ? 'checked' : '' }}>
+        <label class="form-check-label" for="is_loaned">
+            ¿Este equipo es prestado ?
+        </label>
+    </div>
+</div>
+
+{{-- BLOQUE DE CAMPOS DEL PRÉSTAMO (Oculto dinámicamente) --}}
+<div id="loan_fields_block" class="bg-white rounded-lg border border-slate-200 p-6 shadow-xs" style="{{ old('is_loaned') ? '' : 'display: none;' }}">
+    <h2 class="text-sm font-semibold text-slate-700 mb-5">Información del Préstamo</h2>
+    
+    <div class="grid grid-cols-2 gap-5">
+        <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">Nombre del Prestamista *</label>
+            <input type="text" name="loan[borrower_first_name]" value="{{ old('loan.borrower_first_name') }}" autocomplete="off"
+                class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500 bg-white @error('loan.borrower_first_name') border-red-500 @enderror">
+            @error('loan.borrower_first_name') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">Apellido del Prestamista *</label>
+            <input type="text" name="loan[borrower_last_name]" value="{{ old('loan.borrower_last_name') }}" autocomplete="off"
+                class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500 bg-white @error('loan.borrower_last_name') border-red-500 @enderror">
+            @error('loan.borrower_last_name') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">Empresa / Institución *</label>
+            <input type="text" name="loan[borrower_company]" value="{{ old('loan.borrower_company') }}" autocomplete="off"
+                class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500 bg-white @error('loan.borrower_company') border-red-500 @enderror">
+            @error('loan.borrower_company') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">Teléfono de Contacto</label>
+            <input type="text" name="loan[borrower_phone]" value="{{ old('loan.borrower_phone') }}" autocomplete="off"
+                class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500 bg-white @error('loan.borrower_phone') border-red-500 @enderror">
+            @error('loan.borrower_phone') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">Correo Electrónico</label>
+            <input type="email" name="loan[borrower_email]" value="{{ old('loan.borrower_email') }}" autocomplete="off"
+                class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500 bg-white @error('loan.borrower_email') border-red-500 @enderror">
+            @error('loan.borrower_email') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">Fecha y Hora de Entrega *</label>
+            <input type="datetime-local" name="loan[loaned_at]" value="{{ old('loan.loaned_at') }}"
+                class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500 bg-white @error('loan.loaned_at') border-red-500 @enderror">
+            @error('loan.loaned_at') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+        </div>
+
+        <div class="col-span-2">
+            <label class="block text-sm font-medium text-slate-700 mb-1">Razón o Motivo del Préstamo *</label>
+            <textarea name="loan[reason]" rows="3"
+                class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500 bg-white @error('loan.reason') border-red-500 @enderror">{{ old('loan.reason') }}</textarea>
+            @error('loan.reason') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+        </div>
+    </div>
+</div>
+
 <div class="bg-white rounded-lg border border-slate-200 p-6 shadow-xs">
 
     <div class="flex items-center justify-between mb-5">
@@ -172,6 +237,7 @@
         </div>
     </div>
 </div>
+
         <div class="bg-white rounded-lg border border-slate-200 p-6 shadow-xs">
 
             <div class="flex items-center justify-between mb-4">
@@ -209,6 +275,9 @@
 </form>
 
 <script>
+    document.getElementById('is_loaned').addEventListener('change', function() {
+        document.getElementById('loan_fields_block').style.display = this.checked ? 'block' : 'none';
+    });
 let driveIndex = 0;
 
 function addDrive(prefilled = null) {

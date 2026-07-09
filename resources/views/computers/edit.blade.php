@@ -130,7 +130,67 @@
 
             </div>
         </div>
+{{-- NUEVO BLOQUE: GESTIÓN DEL PRÉSTAMO (SERVICIO PRESTADO) --}}
+@php 
+    $latestLoan = $computer->loans->last(); 
+@endphp
+<div class="bg-white rounded-lg border border-slate-200 p-6 shadow-xs">
+    <h2 class="text-sm font-semibold text-slate-700 mb-2">Información del préstamo</h2>
+    <p class="text-xs text-slate-400 mb-5">Completa estos campos únicamente si el equipo es prestado.</p>
 
+    <div class="grid grid-cols-2 gap-5">
+        <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">Nombre del Prestamista</label>
+            <input type="text" name="borrower_first_name" value="{{ old('borrower_first_name', $latestLoan->borrower_first_name ?? '') }}" autocomplete="off" placeholder="Ej: Juan"
+                class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500 bg-white">
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">Apellido del Prestamista</label>
+            <input type="text" name="borrower_last_name" value="{{ old('borrower_last_name', $latestLoan->borrower_last_name ?? '') }}" autocomplete="off" placeholder="Ej: Pérez"
+                class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500 bg-white">
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">Empresa / Institución Destino</label>
+            <input type="text" name="borrower_company" value="{{ old('borrower_company', $latestLoan->borrower_company ?? '') }}" autocomplete="off" placeholder="Empresa externa"
+                class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500 bg-white">
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">Teléfono de Contacto</label>
+            <input type="text" name="borrower_phone" value="{{ old('borrower_phone', $latestLoan->borrower_phone ?? '') }}" autocomplete="off" placeholder="Ej: +1..."
+                class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500 bg-white">
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">Correo Electrónico</label>
+            <input type="email" name="borrower_email" value="{{ old('borrower_email', $latestLoan->borrower_email ?? '') }}" autocomplete="off" placeholder="juan.perez@example.com"
+                class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500 bg-white">
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">Fecha y Hora de Entrega</label>
+            <input type="datetime-local" name="loaned_at" value="{{ old('loaned_at', isset($latestLoan->loaned_at) ? \Carbon\Carbon::parse($latestLoan->loaned_at)->format('Y-m-d\TH:i') : '') }}"
+                class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500 bg-white">
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">Estado del Préstamo</label>
+            <select name="loan_status" class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500 bg-white">
+                <option value="none" {{ !$latestLoan ? 'selected' : '' }}>Sin Préstamo / Ninguno</option>
+                <option value="active" {{ ($latestLoan && !$latestLoan->returned_at) ? 'selected' : '' }}>Préstamo Activo (En Servicio)</option>
+                <option value="returned" {{ ($latestLoan && $latestLoan->returned_at) ? 'selected' : '' }}>Devuelto (Finalizado)</option>
+            </select>
+        </div>
+
+        <div class="col-span-2">
+            <label class="block text-sm font-medium text-slate-700 mb-1">Razón o Motivo del Préstamo</label>
+            <textarea name="loan_reason" rows="2" placeholder="Describa el motivo del servicio prestado externo..."
+                class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500 bg-white">{{ old('loan_reason', $latestLoan->reason ?? '') }}</textarea>
+        </div>
+    </div>
+</div>
 <div class="bg-white rounded-lg border border-slate-200 p-6 shadow-xs">
 
     <div class="flex items-center justify-between mb-5">

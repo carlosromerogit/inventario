@@ -62,4 +62,9 @@ class Computer extends Model
     {
         return $this->morphOne(Warranty::class, 'warrantable');
     }
+
+    public function loans()
+{
+    return $this->morphMany(EquipmentLoan::class, 'loanable');
+}
 }
