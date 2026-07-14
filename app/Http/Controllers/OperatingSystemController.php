@@ -28,7 +28,7 @@ class OperatingSystemController extends Controller implements HasMiddleware
 
     public function index(): View
     {
-        $operatingSystems = OperatingSystem::orderBy('name')->paginate(15);
+        $operatingSystems = OperatingSystem::orderBy('name')->paginate(10);
  
         return view('operating-systems.index', compact('operatingSystems'));
     }

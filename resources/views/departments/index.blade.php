@@ -65,7 +65,7 @@
             <thead class="bg-slate-50">
                 <tr>
                     <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Nombre</th>
-                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Empresas vinculadas</th>
+                    {{-- <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Empresas vinculadas</th> --}}
                     <th class="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-slate-500">Acciones</th>
                 </tr>
             </thead>
@@ -78,7 +78,7 @@
                             </a>
                         </td>
                         
-                        <td class="px-6 py-4 text-sm max-w-xs">
+                        {{-- <td class="px-6 py-4 text-sm max-w-xs">
                             <div class="flex flex-wrap gap-1.5">
                                 @forelse($department->companies as $company)
                                     <span class="inline-flex items-center rounded-md bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-700 border border-indigo-100">
@@ -88,7 +88,7 @@
                                     <span class="text-xs italic text-slate-400">Sin empresas asignadas</span>
                                 @endforelse
                             </div>
-                        </td>
+                        </td> --}}
                       
                         <td class="px-6 py-4 text-right text-sm space-x-3 whitespace-nowrap">
                             <a href="{{ route('departments.edit', $department) }}" class="text-indigo-600 hover:text-indigo-800">Editar</a>

@@ -10,7 +10,7 @@
 
             <x-input name="name" label="Nombre de la empresa" required placeholder="Nombre de la empresa" autocomplete="off"/>
 
-            <x-input name="RNC" label="RNC" required placeholder="Escribir RNC de la empresa" autocomplete="off"/>
+            <x-input name="RNC" label="RNC" placeholder="Escribir RNC de la empresa" autocomplete="off"/>
             
             <x-input name="address" label="Dirección (opcional)" placeholder="Ej. Santo Domingo" autocomplete="off" />
 

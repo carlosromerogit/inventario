@@ -11,16 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('warranties', function (Blueprint $table) {
+            Schema::create('warranties', function (Blueprint $table) {
             $table->id();
-            $table->string('seller'); 
-            $table->string('purchase_order');
-            $table->string('purchase_order_pdf_path')->nullable();
-            
-            $table->date('start_date')->nullable();
-            $table->date('end_date')->nullable();
-            
-            $table->morphs('warrantable');
+            $table->string('warranty_code')->unique();
+            $table->string('provider');
+            $table->date('start_date');
+            $table->date('end_date');
+            $table->text('notes')->nullable();
+            $table->string('document_path')->nullable();
             $table->timestamps();
         });
     }

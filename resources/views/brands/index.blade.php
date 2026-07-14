@@ -32,11 +32,6 @@
     </div>
 @endif
 
-@if (session('success'))
-    <div class="mb-4 p-4 text-sm text-green-700 bg-green-50 rounded-lg border border-green-200 shadow-sm" role="alert">
-        <span class="font-semibold">Éxito:</span> {{ session('success') }}
-    </div>
-@endif
     <div class="flex items-center justify-between mb-6">
         <p class="text-sm text-slate-500">{{ $brands->total() }} marcas encontradas</p>
         

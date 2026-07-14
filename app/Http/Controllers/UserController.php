@@ -35,6 +35,7 @@ class UserController extends Controller implements HasMiddleware
 
         $users = $query
             ->orderBy('name')
+            ->with('roles')
             ->paginate(15)
             ->withQueryString();
 

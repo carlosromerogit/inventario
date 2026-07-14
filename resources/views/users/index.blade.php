@@ -21,7 +21,17 @@
         @endcan
 
     </div>
+@if (session('success'))
+    <div class="mb-4 rounded-md bg-green-50 p-4 border border-green-200">
+        <p class="text-sm font-medium text-green-800">{{ session('success') }}</p>
+    </div>
+@endif
 
+@if (session('error'))
+    <div class="mb-4 rounded-md bg-red-50 p-4 border border-red-200">
+        <p class="text-sm font-medium text-red-800">{{ session('error') }}</p>
+    </div>
+@endif
     <div class="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
 
         <table class="min-w-full divide-y divide-slate-200">
@@ -37,9 +47,7 @@
                         Usuario
                     </th>
 
-                    <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase">
-                        Email
-                    </th>
+                 
 
                     <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase">
                         Rol
@@ -66,9 +74,6 @@
                             {{ $user->username }}
                         </td>
 
-                        <td class="px-6 py-4 text-sm text-slate-700">
-                            {{ $user->email }}
-                        </td>
 
                         <td class="px-6 py-4 text-sm">
 
@@ -90,7 +95,6 @@
 
                         </td>
 
-
                         <td class="px-6 py-4 text-right text-sm space-x-3">
 
                             <a href="{{ route('users.show', $user) }}"
@@ -105,19 +109,17 @@
                                 </a>
                             @endcan
 
-                            @can('users.delete')
+                            @can('users.destroy')
                                 <form action="{{ route('users.destroy', $user) }}"
                                       method="POST"
                                       class="inline"
                                       onsubmit="return confirm('¿Eliminar este usuario?')">
-
                                     @csrf
                                     @method('DELETE')
 
                                     <button class="text-red-600 hover:text-red-900 font-medium">
                                         Eliminar
                                     </button>
-
                                 </form>
                             @endcan
 

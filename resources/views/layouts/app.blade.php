@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'Inventario') · InvTrack</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script> {{-- CDN de soporte en desarrollo --}}
+    {{-- <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script> CDN de soporte en desarrollo --}}
 </head>
 <body class="h-full font-sans antialiased text-slate-800">
     <div class="flex h-full min-h-screen">
@@ -36,17 +36,22 @@
                 <div>
                     <p class="px-3 text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Directorio</p>
 
-                    <x-nav-link :route="'employees.index'" :active="request()->routeIs('employees.*')">
-                        Empleados
+                    <x-nav-link :route="'companies.index'" :active="request()->routeIs('companies.*')">
+                        Empresas
                     </x-nav-link>
-
+                    
                     <x-nav-link :route="'departments.index'" :active="request()->routeIs('departments.*')">
                         Departamentos
                     </x-nav-link>
 
-                    <x-nav-link :route="'companies.index'" :active="request()->routeIs('companies.*')">
-                        Empresas
+                    <x-nav-link :route="'employees.index'" :active="request()->routeIs('employees.*')">
+                        Empleados
                     </x-nav-link>
+                   
+                    <x-nav-link :route="'warranties.index'" :active="request()->routeIs('warranties.*')">
+                        Garantías
+                    </x-nav-link>
+
                 </div>
 
                 <div>

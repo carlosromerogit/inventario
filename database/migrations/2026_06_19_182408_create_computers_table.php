@@ -24,6 +24,7 @@ return new class extends Migration
             $table->foreignId('operating_system_id')->nullable()->constrained()->nullOnDelete()->cascadeOnUpdate();
             $table->foreignId('company_id')->nullable()->constrained()->nullOnDelete()->cascadeOnUpdate();
             $table->enum('status', ['stock', 'assigned', 'faulty', 'obsolete'])->default('stock');
+
             $table->timestamps();
         });
     }

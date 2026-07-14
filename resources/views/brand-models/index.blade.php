@@ -65,11 +65,11 @@
             <tbody class="divide-y divide-slate-100">
                 @forelse ($brandModels as $model)
                     <tr class="hover:bg-slate-50">
-                        <td class="px-6 py-4 text-sm text-slate-800">
-                            {{ $model->brand->name }}
-                        </td>
                         <td class="px-6 py-4 text-sm text-slate-800 font-medium">
                             {{ $model->name }}
+                        </td>
+                        <td class="px-6 py-4 text-sm text-slate-800">
+                            {{ $model->brand->name }}
                         </td>
                         <td class="px-6 py-4 text-right text-sm space-x-3">
                             <a href="{{ route('brand-models.edit', $model) }}" class="text-indigo-600 hover:text-indigo-800">Editar</a>

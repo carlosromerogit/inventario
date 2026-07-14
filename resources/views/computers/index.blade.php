@@ -20,29 +20,6 @@
                        class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
             </div>
 
-            {{-- <div>
-                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Marca</label>
-                <select name="brand_id" class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
-                    <option value="">Todas</option>
-                    @foreach($brands as $brand)
-                        <option value="{{ $brand->id }}" {{ request('brand_id') == $brand->id ? 'selected' : '' }}>
-                            {{ $brand->name }}
-                        </option>
-                    @endforeach
-                </select>
-            </div> --}}
-
-            {{-- <div>
-                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Marca/Modelo</label>
-                <select name="brand_model_id" class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
-                    <option value="">Todos</option>
-                    @foreach($computerModels as $cModel)
-                        <option value="{{ $cModel->id }}" {{ request('brand_model_id') == $cModel->id ? 'selected' : '' }}>
-                            {{ $cModel->brand->name }} — {{ $cModel->name }}
-                        </option>
-                    @endforeach
-                </select>
-            </div> --}}
             <div>
     <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Marca/Modelo</label>
     <select name="brand_or_model" class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
@@ -77,30 +54,6 @@
                     placeholder="Ej: 8GB, 16GB"
                     class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
             </div>
-
-            {{-- <div>
-                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Empresa</label>
-                <select name="company_id" class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
-                    <option value="">Todas</option>
-                    @foreach($companies as $company)
-                        <option value="{{ $company->id }}" {{ request('company_id') == $company->id ? 'selected' : '' }}>
-                            {{ $company->name }}
-                        </option>
-                    @endforeach
-                </select>
-            </div> --}}
-
-            {{-- <div>
-                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Departamento</label>
-                <select name="department_id" class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
-                    <option value="">Todos</option>
-                    @foreach($departments as $dept)
-                        <option value="{{ $dept->id }}" {{ request('department_id') == $dept->id ? 'selected' : '' }}>
-                            {{ $dept->name }}
-                        </option>
-                    @endforeach
-                </select>
-            </div> --}}
 
         <div>
             <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Empresa / Departamento</label>
@@ -262,7 +215,48 @@
     </div>
 
 </div>
+<div class="mt-5 border-t border-slate-200 pt-5">
+    <div class="flex items-center justify-between mb-4">
+        <h3 class="text-sm font-semibold text-slate-700">
+            Filtrar por garantía
+        </h3>
+        
+        <label class="inline-flex items-center cursor-pointer">
+            <input type="checkbox" 
+                   name="has_warranty" 
+                   value="1" 
+                   {{ request('has_warranty') ? 'checked' : '' }}
+                   class="rounded border-slate-300 text-slate-800 focus:ring-slate-500 w-4 h-4 mr-2">
+            <span class="text-xs font-semibold text-slate-600 uppercase">Solo equipos con garantía</span>
+        </label>
+    </div>
 
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <div>
+            <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">
+                Código de Garantía
+            </label>
+            <input type="text"
+                   name="warranty_code"
+                   autocomplete="off"
+                   value="{{ request('warranty_code') }}"
+                   placeholder="Ej: GAR-2026-XXXX..."
+                   class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
+        </div>
+
+        <div>
+            <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">
+                Estado de la Garantía
+            </label>
+            <select name="warranty_status" class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
+                <option value="">Todos</option>
+                <option value="active" {{ request('warranty_status') == 'active' ? 'selected' : '' }}>Vigente (Activa)</option>
+                <option value="expired" {{ request('warranty_status') == 'expired' ? 'selected' : '' }}>Vencida</option>
+                <option value="none" {{ request('warranty_status') == 'none' ? 'selected' : '' }}>Sin registrar</option>
+            </select>
+        </div>
+    </div>
+</div>
         <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
 @if(request()->except('page'))
     <a href="{{ route('computers.index') }}"

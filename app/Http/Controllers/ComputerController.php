@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Brand;
 use App\Models\BrandModel;
 use App\Models\Computer;
 use App\Models\Department;
@@ -17,6 +18,7 @@ use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
+use App\Models\Warranty;
 
 class ComputerController extends Controller implements HasMiddleware
 {
@@ -35,7 +37,7 @@ class ComputerController extends Controller implements HasMiddleware
     }
 
 
-  public function index(Request $request)
+public function index(Request $request)
 {
     $query = Computer::with([
         'brandModel.brand',
@@ -72,16 +74,6 @@ class ComputerController extends Controller implements HasMiddleware
         $query->where('brand_model_id', $modelId);
     }
 }
-
-    // if ($request->filled('brand_id')) {
-    //     $query->whereHas('brandModel', function ($q) use ($request) {
-    //         $q->where('brand_id', $request->brand_id);
-    //     });
-    // }
-
-    // if ($request->filled('brand_model_id')) {
-    //     $query->where('brand_model_id', $request->brand_model_id);
-    // }
 
     if ($request->filled('company_or_department')) {
     $value = $request->input('company_or_department');
@@ -150,6 +142,44 @@ class ComputerController extends Controller implements HasMiddleware
             }
         });
     }
+    // --- FILTRAR POR GARANTÍA (POLIMÓRFICA) ---
+
+// A. Buscar por código específico de garantía (Lo más importante)
+if ($request->filled('warranty_code')) {
+    $warrantyCode = $request->warranty_code;
+    $query->whereHas('warranties', function ($q) use ($warrantyCode) {
+        $q->where('warranty_code', 'like', "%{$warrantyCode}%");
+    });
+}
+
+// B. Filtrar por estado de la garantía (Vigente, Vencida, Sin registrar)
+        if ($request->has('has_warranty')) {
+            $query->whereHas('warranties', function ($q) use ($request) {
+                // B. Si además el usuario escribió un código de garantía, lo filtramos aquí dentro
+                if ($request->filled('warranty_code')) {
+                    $q->where('warranty_code', 'like', "%{$request->warranty_code}%");
+                }
+            });
+        }
+        if ($request->filled('warranty_status')) {
+            $warrantyStatus = $request->warranty_status;
+            $today = now()->toDateString();
+
+            if ($warrantyStatus === 'active') {
+                $query->whereHas('warranties', function ($q) use ($today) {
+                    $q->where('start_date', '<=', $today)
+                    ->where('end_date', '>=', $today);
+                });
+            } elseif ($warrantyStatus === 'expired') {
+                $query->whereHas('warranties', function ($q) use ($today) {
+                    $q->where('end_date', '<', $today);
+                })->whereDoesntHave('warranties', function ($q) use ($today) {
+                    $q->where('end_date', '>=', $today);
+                });
+            } elseif ($warrantyStatus === 'none') {
+                $query->whereDoesntHave('warranties');
+            }
+        }
 
     if ($request->input('export') === 'pdf') {
         $computersToExport = $query->with(['brandModel.brand', 'employee', 'company', 'operatingSystem'])
@@ -220,9 +250,15 @@ class ComputerController extends Controller implements HasMiddleware
         ->orderBy('name')
         ->get();
 
+        $brands = Brand::whereHas('brandModels', function ($query) {
+            $query->where('type', 'computer');
+        })
+        ->orderBy('name')
+        ->get();
+
     return view('computers.index', [
         'computers'        => $computers,
-        'brands'           => \App\Models\Brand::orderBy('name')->get(),
+        'brands'           => $brands,
         'departments'      => \App\Models\Department::orderBy('name')->get(),
         'operatingSystems' => \App\Models\OperatingSystem::orderBy('name')->get(),
         'companies'        => \App\Models\Company::orderBy('name')->get(),
@@ -271,7 +307,7 @@ public function show(Computer $computer): View
         'drives.driveType',
         'drives.brandModel.brand',
         'images',
-        'warranty'
+        'warranties'
     ]);
 
     return view('computers.show', compact('computer'));
@@ -281,6 +317,7 @@ public function store(Request $request): RedirectResponse
     $this->parseCompanyAndDepartment($request);
 
     $validated = $this->validateComputer($request);
+
 
     DB::transaction(function () use ($request, $validated, &$computer) {
         $computer = Computer::create($validated);
@@ -305,30 +342,34 @@ public function store(Request $request): RedirectResponse
         }
     });
 
-    if ($request->filled('seller') || $request->filled('purchase_order') || $request->hasFile('purchase_order_pdf')) {
-        $pdfPath = null;
-        if ($request->hasFile('purchase_order_pdf')) {
-            $pdfPath = $request->file('purchase_order_pdf')->store('warranties', 'public');
+   //////////////////////////////////////////////////////////////////////////////////////////
+        if ($request->filled('existing_warranty_id')) {
+            $computer->warranties()->attach($request->input('existing_warranty_id'));
+        } elseif ($request->filled('seller') || $request->filled('purchase_order') || $request->hasFile('purchase_order_pdf')) {
+            $pdfPath = $request->hasFile('purchase_order_pdf')
+                ? $request->file('purchase_order_pdf')->store('warranties', 'public')
+                : null;
+
+            $warranty = Warranty::create([
+                'seller'                  => $request->input('seller'),
+                'purchase_order'          => $request->input('purchase_order'),
+                'purchase_order_pdf_path' => $pdfPath,
+                'start_date'              => $request->input('warranty_start_date'),
+                'end_date'                => $request->input('warranty_end_date'),
+            ]);
+
+            $computer->warranties()->attach($warranty->id);
         }
+        //////////////////////////////////////////////////////////////////////////////////////////
 
-        $computer->warranty()->create([
-            'seller' => $request->input('seller'),
-            'purchase_order' => $request->input('purchase_order'),
-            'purchase_order_pdf_path' => $pdfPath,
-            'start_date' => $request->input('warranty_start_date'), 
-            'end_date' => $request->input('warranty_end_date'),  
-        ]);
-    }
-
-    if ($request->boolean('is_loaned') && !empty($validated['loan'])) {
-        // Guarda en equipment_loans asignando automáticamente:
-        // loanable_id = $computer->id  y  loanable_type = App\Models\Computer
+     if ($request->boolean('is_loaned') && !empty($validated['loan'])) {
         $computer->loans()->create($validated['loan']);
     }
 
-    return redirect()->route('computers.index')
-        ->with('success', 'Equipo creado correctamente.');
-}
+    
+        return redirect()->route('computers.index')
+            ->with('success', 'Equipo creado correctamente.');
+    }
 
     public function edit(Computer $computer): View
     {
@@ -341,6 +382,7 @@ public function store(Request $request): RedirectResponse
             'drives.driveType',
             'drives.brandModel.brand',
             'images',
+            'warranties', // <-- agregar esto
         ]);
 
         return view('computers.edit', [
@@ -354,26 +396,32 @@ public function store(Request $request): RedirectResponse
             'driveModels' => BrandModel::with('brand')->where('type', 'drive')->orderBy('name')->get(),
         ]);
     }
-
-    public function update(Request $request, Computer $computer): RedirectResponse
+public function update(Request $request, Computer $computer): RedirectResponse
 {
     $this->parseCompanyAndDepartment($request);
 
+    // Un equipo con garantía (de la empresa) no puede marcarse como prestado
+    $hasWarranty = $computer->warranties()->exists()
+        || $request->filled('existing_warranty_id');
+
+    if ($hasWarranty) {
+        $request->merge(['is_loaned' => false, 'loan' => null]);
+    }
+
     $validated = $this->validateComputer($request, $computer->id);
+    $validatedDrives = $this->validateDrives($request);
 
-    $this->validateDrives($request);
-
-    DB::transaction(function () use ($request, $validated, $computer) {
+    DB::transaction(function () use ($request, $validated, $validatedDrives, $computer) {
         $computer->update($validated);
 
-        if ($request->filled('drives')) {
-            foreach ($request->input('drives', []) as $driveData) {
+        if (! empty($validatedDrives['drives'])) {
+            foreach ($validatedDrives['drives'] as $driveData) {
                 $computer->drives()->create([
-                    'drive_type_id'   => $driveData['drive_type_id'],
-                    'brand_model_id'  => $driveData['brand_model_id'],
-                    'capacity_value'  => $driveData['cap_number'],
-                    'capacity_unit'   => $driveData['cap_unit'],
-                    'capacity_in_mb'  => $this->calculateMb($driveData['cap_number'], $driveData['cap_unit']),
+                    'drive_type_id'  => $driveData['drive_type_id'],
+                    'brand_model_id' => $driveData['brand_model_id'],
+                    'capacity_value' => $driveData['cap_number'],
+                    'capacity_unit'  => $driveData['cap_unit'],
+                    'capacity_in_mb' => $this->calculateMb($driveData['cap_number'], $driveData['cap_unit']),
                 ]);
             }
         }
@@ -383,65 +431,37 @@ public function store(Request $request): RedirectResponse
                 $path = $file->store('computers/' . $computer->id, 'public');
                 Image::create([
                     'path' => $path,
-                    'computer_id' => $computer->id
+                    'computer_id' => $computer->id,
                 ]);
             }
         }
 
-        if ($request->filled('seller') || $request->filled('purchase_order') || $request->hasFile('purchase_order_pdf')) {
-        
-        $warrantyData = [
-            'seller' => $request->input('seller'),
-            'purchase_order' => $request->input('purchase_order'),
-            'start_date' => $request->input('warranty_start_date'),
-            'end_date' => $request->input('warranty_end_date'),
-        ];
-
-        if ($request->hasFile('purchase_order_pdf')) {
-            if ($computer->warranty && $computer->warranty->purchase_order_pdf_path) {
-                Storage::disk('public')->delete($computer->warranty->purchase_order_pdf_path);
-            }
-            $warrantyData['purchase_order_pdf_path'] = $request->file('purchase_order_pdf')->store('warranties', 'public');
+        // ---------------------------------------------------------------
+        // La creación de garantías nuevas se maneja en WarrantyController.
+        // Aquí solo vinculamos una garantía existente si el usuario la seleccionó.
+        if ($request->filled('existing_warranty_id')) {
+            $computer->warranties()->syncWithoutDetaching([$request->input('existing_warranty_id')]);
         }
+        // ---------------------------------------------------------------
 
-        $computer->warranty()->updateOrCreate([], $warrantyData);
-    }
+        // Esquema real que envía el formulario: is_loaned + loan[...]
+        $isLoaned = $validated['is_loaned'] ?? false;
+        $activeLoan = $computer->loans()->whereNull('returned_at')->latest()->first();
+
+        if ($isLoaned) {
+            $loanData = $validated['loan'] ?? [];
+
+            if ($activeLoan) {
+                $activeLoan->update($loanData);
+            } else {
+                $computer->loans()->create($loanData);
+            }
+        } elseif ($activeLoan) {
+            // El usuario desmarcó "es prestado" (o el equipo ahora tiene garantía):
+            // cerramos el préstamo activo.
+            $activeLoan->update(['returned_at' => now()]);
+        }
     });
-
-        $loanStatus = $request->input('loan_status', 'none');
-
-        if ($loanStatus !== 'none') {
-            // Obtenemos los datos limpios del formulario
-            $loanData = [
-                'borrower_first_name' => $request->input('borrower_first_name'),
-                'borrower_last_name'  => $request->input('borrower_last_name'),
-                'borrower_company'    => $request->input('borrower_company'),
-                'borrower_phone'      => $request->input('borrower_phone'),
-                'borrower_email'      => $request->input('borrower_email'),
-                'loaned_at'           => $request->input('loaned_at'),
-                'reason'              => $request->input('loan_reason'),
-            ];
-
-            // Buscamos si el equipo ya tiene un último préstamo
-            $latestLoan = $computer->loans()->latest()->first();
-
-            if ($loanStatus === 'active') {
-                if ($latestLoan && !$latestLoan->returned_at) {
-                    // Si ya hay un préstamo activo, actualizamos sus datos
-                    $latestLoan->update(array_merge($loanData, ['returned_at' => null]));
-                } else {
-                    // Si no había préstamo o el último ya estaba devuelto, creamos uno nuevo activo
-                    $computer->loans()->create($loanData);
-                }
-            } elseif ($loanStatus === 'returned') {
-                if ($latestLoan) {
-                    // Si seleccionan devuelto, actualizamos los datos y marcamos la fecha de devolución si no la tiene
-                    $latestLoan->update(array_merge($loanData, [
-                        'returned_at' => $latestLoan->returned_at ?? now()
-                    ]));
-                }
-            }
-        }
 
     return redirect()
         ->route('computers.show', $computer)
@@ -463,12 +483,15 @@ public function store(Request $request): RedirectResponse
 
 private function validateComputer(Request $request, ?int $id = null): array
 {
+    // Evaluamos dinámicamente para alternar la obligación de los campos internos
+    $isLoaned = $request->boolean('is_loaned');
+
     return $request->validate([
         'brand_model_id'      => ['required', 'exists:brand_models,id'],
         'serial'              => ['required', 'string', 'max:255', 'unique:computers,serial,' . $id],
         
-        'department_id'       => ['required', 'exists:departments,id'],
-        'company_id'          => ['required', 'exists:companies,id'],
+        'department_id'       => [$isLoaned ? 'nullable' : 'required', 'exists:departments,id'],
+        'company_id'          => [$isLoaned ? 'nullable' : 'required', 'exists:companies,id'],
         
         'employee_id'         => ['nullable', 'exists:employees,id'],
         'processor'           => ['nullable', 'string'],
@@ -491,12 +514,13 @@ private function validateComputer(Request $request, ?int $id = null): array
         'warranty_end_date'   => ['nullable', 'date', 'after_or_equal:warranty_start_date'],
 
         'is_loaned'               => ['nullable', 'boolean'],
+        
         'loan'                    => ['nullable', 'array', 'required_if:is_loaned,1'],
-        'loan.reason'             => ['required_if:is_loaned,1', 'string'],
-        'loan.loaned_at'          => ['required_if:is_loaned,1', 'date'],
-        'loan.borrower_first_name'=> ['required_if:is_loaned,1', 'string', 'max:255'],
-        'loan.borrower_last_name' => ['required_if:is_loaned,1', 'string', 'max:255'],
-        'loan.borrower_company'   => ['required_if:is_loaned,1', 'string', 'max:255'],
+        'loan.reason'             => ['nullable', 'required_if:is_loaned,1', 'string'],
+        'loan.loaned_at'          => ['nullable', 'required_if:is_loaned,1', 'date'],
+        'loan.borrower_first_name'=> ['nullable', 'required_if:is_loaned,1', 'string', 'max:255'],
+        'loan.borrower_last_name' => ['nullable', 'required_if:is_loaned,1', 'string', 'max:255'],
+        'loan.borrower_company'   => ['nullable', 'required_if:is_loaned,1', 'string', 'max:255'],
         'loan.borrower_phone'     => ['nullable', 'string', 'max:50'],
         'loan.borrower_email'     => ['nullable', 'email', 'max:255'],
     ],

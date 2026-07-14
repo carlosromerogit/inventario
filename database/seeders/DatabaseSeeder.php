@@ -111,14 +111,22 @@ class DatabaseSeeder extends Seeder
         Permission::firstOrCreate(['name'=> 'users.edit'])->syncRoles([$super_admin]);
         Permission::firstOrCreate(['name'=> 'users.update'])->syncRoles([$super_admin]);
         Permission::firstOrCreate(['name'=> 'users.destroy'])->syncRoles([$super_admin]);
+  
+        Permission::firstOrCreate(['name'=> 'warranties.index'])->syncRoles([$super_admin]);
+        Permission::firstOrCreate(['name'=> 'warranties.create'])->syncRoles([$super_admin]);
+        Permission::firstOrCreate(['name'=> 'warranties.store'])->syncRoles([$super_admin]);
+        Permission::firstOrCreate(['name'=> 'warranties.show'])->syncRoles([$super_admin]);
+        Permission::firstOrCreate(['name'=> 'warranties.edit'])->syncRoles([$super_admin]);
+        Permission::firstOrCreate(['name'=> 'warranties.update'])->syncRoles([$super_admin]);
+        Permission::firstOrCreate(['name'=> 'warranties.destroy'])->syncRoles([$super_admin]);
 
 
-        User::firstOrCreate([
-            'name' => 'Administrador TI',
-            'username' => 'admin', 
-            // 'email' => 'admin@empresa.com',
-            'password' => Hash::make('admin@1'),
-        ])->assignRole('super_admin');
+        // User::firstOrCreate([
+        //     'name' => 'Administrador TI',
+        //     'username' => 'admin', 
+        //     // 'email' => 'admin@empresa.com',
+        //     'password' => Hash::make('admin@1'),
+        // ])->assignRole('super_admin');
 
     }
 }

@@ -13,6 +13,7 @@ use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\ImageController;
 use App\Http\Controllers\OperatingSystemController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\WarrantyController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -51,4 +52,18 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/api/employees-by-location', [ComputerController::class, 'getEmployeesByLocation'])
     ->name('api.employees.location');
+
+
+Route::controller(WarrantyController::class)->group(function () {
+    Route::get('/warranties', 'index')->name('warranties.index');
+    Route::get('/warranties/create', 'create')->name('warranties.create');
+    Route::post('/warranties', 'store')->name('warranties.store');
+    Route::get('/warranties/{warranty}', 'show')->name('warranties.show');
+    Route::get('/warranties/{warranty}/edit', 'edit')->name('warranties.edit');
+    Route::put('/warranties/{warranty}', 'update')->name('warranties.update');
+    Route::delete('/warranties/{warranty}', 'destroy')->name('warranties.destroy');
+
+    Route::resource('warranties', WarrantyController::class);
+    Route::get('api/warranties/devices', [WarrantyController::class, 'getDevicesByType'])->name('warranties.devices');
+});
 });

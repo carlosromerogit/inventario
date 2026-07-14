@@ -56,7 +56,7 @@
                 <tr>
                     <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Nombre</th>
                     <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">RNC</th>
-                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Departamentos</th>
+                    {{-- <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Departamentos</th> --}}
                     <th class="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-slate-500">Acciones</th>
                 </tr>
             </thead>
@@ -76,7 +76,7 @@
                             </a>
                         </td>
 
-                        <td class="px-6 py-4 text-sm max-w-xs">
+                        {{-- <td class="px-6 py-4 text-sm max-w-xs">
                             <div class="flex flex-wrap gap-1.5">
                                 @forelse($company->departments as $dept)
                                     <span class="inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600 border border-slate-200">
@@ -86,7 +86,7 @@
                                     <span class="text-xs italic text-slate-400">Sin departamentos</span>
                                 @endforelse
                             </div>
-                        </td>
+                        </td> --}}
 
                         <td class="px-6 py-4 text-right text-sm space-x-3 whitespace-nowrap">
                             <a href="{{ route('companies.edit', $company) }}" class="text-indigo-600 hover:text-indigo-800">

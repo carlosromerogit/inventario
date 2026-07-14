@@ -197,7 +197,7 @@
     </p>
 </div>
 
-<div class="bg-white rounded-lg border border-slate-200 p-6 shadow-xs">
+{{-- <div class="bg-white rounded-lg border border-slate-200 p-6 shadow-xs">
     <h2 class="text-sm font-semibold text-slate-700 mb-5">Garantía</h2>
 
     <div class="grid grid-cols-2 gap-5">
@@ -236,7 +236,7 @@
             @error('purchase_order_pdf') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
         </div>
     </div>
-</div>
+</div> --}}
 
         <div class="bg-white rounded-lg border border-slate-200 p-6 shadow-xs">
 

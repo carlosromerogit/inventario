@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\MorphOne;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 
 class Computer extends Model
 {
@@ -20,7 +20,7 @@ class Computer extends Model
         'employee_id',
         'operating_system_id',
         'company_id',  
-        'status',    
+        'status', 
     ];
 
     public function brandModel(): BelongsTo
@@ -57,14 +57,21 @@ class Computer extends Model
     {
         return $this->hasMany(Image::class);
     }
-
-   public function warranty(): MorphOne
+  
+        public function loans()
     {
-        return $this->morphOne(Warranty::class, 'warrantable');
+        return $this->morphMany(EquipmentLoan::class, 'loanable');
     }
 
-    public function loans()
-{
-    return $this->morphMany(EquipmentLoan::class, 'loanable');
-}
+ 
+    public function warranties(): MorphToMany
+    {
+        return $this->morphToMany(
+            Warranty::class,
+            'warrantable',
+            'warrantables',
+            'warrantable_id',
+            'warranty_id'
+        );
+    }
 }

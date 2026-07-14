@@ -40,7 +40,7 @@ class BrandModelController extends Controller implements HasMiddleware
     }
 
     $brandModels = $query->orderBy('name')
-        ->paginate(10)
+        ->paginate(9)
         ->withQueryString();
 
     $brands = Brand::orderBy('name')->get();
@@ -110,7 +110,7 @@ class BrandModelController extends Controller implements HasMiddleware
             'type'     => 'tipo de dispositivo',
             'name'     => 'nombre del modelo',
         ]);
-        
+
         $brandModel->update($validated);
  
         return redirect()->route('brand-models.index')->with('success', 'Modelo actualizado correctamente.');

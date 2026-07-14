@@ -3,21 +3,27 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 
 class Warranty extends Model
 {
-    //
     protected $fillable = [
-        'seller',
-        'purchase_order',
-        'purchase_order_pdf_path',
+        'warranty_code',
+        'provider',
         'start_date',
         'end_date',
+        'notes',
+        'document_path'
     ];
-    
-    public function warrantable(): MorphTo
+
+    public function computers(): MorphToMany
     {
-        return $this->morphTo();
+        return $this->morphedByMany(
+            Computer::class,
+            'warrantable',
+            'warrantables',
+            'warranty_id',
+            'warrantable_id'
+        );
     }
 }

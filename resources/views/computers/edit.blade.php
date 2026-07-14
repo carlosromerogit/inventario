@@ -130,67 +130,165 @@
 
             </div>
         </div>
-{{-- NUEVO BLOQUE: GESTIÓN DEL PRÉSTAMO (SERVICIO PRESTADO) --}}
-@php 
-    $latestLoan = $computer->loans->last(); 
+@php
+    $latestLoan = $computer->loans->last();
+    $activeLoan = $computer->loans->firstWhere('returned_at', null);
+
+    $isLoaned = old('is_loaned', $activeLoan !== null);
 @endphp
-<div class="bg-white rounded-lg border border-slate-200 p-6 shadow-xs">
-    <h2 class="text-sm font-semibold text-slate-700 mb-2">Información del préstamo</h2>
-    <p class="text-xs text-slate-400 mb-5">Completa estos campos únicamente si el equipo es prestado.</p>
+@unless($computer->warranties->isNotEmpty())
+<div class="form-group mb-4">
+    <div class="flex items-center gap-2">
+        <input
+            type="checkbox"
+            id="is_loaned"
+            name="is_loaned"
+            value="1"
+            {{ $isLoaned ? 'checked' : '' }}
+            class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
 
-    <div class="grid grid-cols-2 gap-5">
-        <div>
-            <label class="block text-sm font-medium text-slate-700 mb-1">Nombre del Prestamista</label>
-            <input type="text" name="borrower_first_name" value="{{ old('borrower_first_name', $latestLoan->borrower_first_name ?? '') }}" autocomplete="off" placeholder="Ej: Juan"
-                class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500 bg-white">
-        </div>
-
-        <div>
-            <label class="block text-sm font-medium text-slate-700 mb-1">Apellido del Prestamista</label>
-            <input type="text" name="borrower_last_name" value="{{ old('borrower_last_name', $latestLoan->borrower_last_name ?? '') }}" autocomplete="off" placeholder="Ej: Pérez"
-                class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500 bg-white">
-        </div>
-
-        <div>
-            <label class="block text-sm font-medium text-slate-700 mb-1">Empresa / Institución Destino</label>
-            <input type="text" name="borrower_company" value="{{ old('borrower_company', $latestLoan->borrower_company ?? '') }}" autocomplete="off" placeholder="Empresa externa"
-                class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500 bg-white">
-        </div>
-
-        <div>
-            <label class="block text-sm font-medium text-slate-700 mb-1">Teléfono de Contacto</label>
-            <input type="text" name="borrower_phone" value="{{ old('borrower_phone', $latestLoan->borrower_phone ?? '') }}" autocomplete="off" placeholder="Ej: +1..."
-                class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500 bg-white">
-        </div>
-
-        <div>
-            <label class="block text-sm font-medium text-slate-700 mb-1">Correo Electrónico</label>
-            <input type="email" name="borrower_email" value="{{ old('borrower_email', $latestLoan->borrower_email ?? '') }}" autocomplete="off" placeholder="juan.perez@example.com"
-                class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500 bg-white">
-        </div>
-
-        <div>
-            <label class="block text-sm font-medium text-slate-700 mb-1">Fecha y Hora de Entrega</label>
-            <input type="datetime-local" name="loaned_at" value="{{ old('loaned_at', isset($latestLoan->loaned_at) ? \Carbon\Carbon::parse($latestLoan->loaned_at)->format('Y-m-d\TH:i') : '') }}"
-                class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500 bg-white">
-        </div>
-
-        <div>
-            <label class="block text-sm font-medium text-slate-700 mb-1">Estado del Préstamo</label>
-            <select name="loan_status" class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500 bg-white">
-                <option value="none" {{ !$latestLoan ? 'selected' : '' }}>Sin Préstamo / Ninguno</option>
-                <option value="active" {{ ($latestLoan && !$latestLoan->returned_at) ? 'selected' : '' }}>Préstamo Activo (En Servicio)</option>
-                <option value="returned" {{ ($latestLoan && $latestLoan->returned_at) ? 'selected' : '' }}>Devuelto (Finalizado)</option>
-            </select>
-        </div>
-
-        <div class="col-span-2">
-            <label class="block text-sm font-medium text-slate-700 mb-1">Razón o Motivo del Préstamo</label>
-            <textarea name="loan_reason" rows="2" placeholder="Describa el motivo del servicio prestado externo..."
-                class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500 bg-white">{{ old('loan_reason', $latestLoan->reason ?? '') }}</textarea>
-        </div>
+        <label for="is_loaned" class="text-sm font-medium text-slate-700">
+            ¿Este equipo es prestado?
+        </label>
     </div>
 </div>
+
+
+<div id="loan_fields_block"
+     class="bg-white rounded-lg border border-slate-200 p-6 shadow-xs"
+     style="{{ $isLoaned ? '' : 'display:none;' }}">
+
+    <h2 class="text-sm font-semibold text-slate-700 mb-5">
+        Información del Préstamo
+    </h2>
+
+    <div class="grid grid-cols-2 gap-5">
+
+        <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">
+                Nombre del Prestamista *
+            </label>
+
+            <input type="text"
+                name="loan[borrower_first_name]"
+                value="{{ old('loan.borrower_first_name', $activeLoan->borrower_first_name ?? '') }}"
+                autocomplete="off"
+                class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
+
+        </div>
+
+
+        <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">
+                Apellido del Prestamista *
+            </label>
+
+            <input type="text"
+                name="loan[borrower_last_name]"
+                value="{{ old('loan.borrower_last_name', $activeLoan->borrower_last_name ?? '') }}"
+                autocomplete="off"
+                class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
+
+        </div>
+
+
+        <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">
+                Empresa / Institución *
+            </label>
+
+            <input type="text"
+                name="loan[borrower_company]"
+                value="{{ old('loan.borrower_company', $activeLoan->borrower_company ?? '') }}"
+                autocomplete="off"
+                class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
+
+        </div>
+
+
+        <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">
+                Teléfono
+            </label>
+
+            <input type="text"
+                name="loan[borrower_phone]"
+                value="{{ old('loan.borrower_phone', $activeLoan->borrower_phone ?? '') }}"
+                autocomplete="off"
+                class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
+
+        </div>
+
+
+        <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">
+                Correo Electrónico
+            </label>
+
+            <input type="email"
+                name="loan[borrower_email]"
+                value="{{ old('loan.borrower_email', $activeLoan->borrower_email ?? '') }}"
+                autocomplete="off"
+                class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
+
+        </div>
+
+
+        <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">
+                Fecha y Hora de Entrega *
+            </label>
+
+            <input type="datetime-local"
+                name="loan[loaned_at]"
+                value="{{ old('loan.loaned_at', isset($activeLoan->loaned_at) ? \Carbon\Carbon::parse($activeLoan->loaned_at)->format('Y-m-d\TH:i') : '') }}"
+                class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
+
+        </div>
+
+
+        <div class="col-span-2">
+
+            <label class="block text-sm font-medium text-slate-700 mb-1">
+                Razón o Motivo del Préstamo *
+            </label>
+
+            <textarea
+                name="loan[reason]"
+                rows="3"
+                class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm">{{ old('loan.reason', $activeLoan->reason ?? '') }}</textarea>
+
+        </div>
+
+    </div>
+</div>
+
+@else
+<div class="bg-slate-50 border border-slate-200 rounded-lg p-4 text-sm text-slate-500">
+    Este equipo tiene garantía registrada (es propiedad de la empresa), por lo que no puede marcarse como prestado.
+</div>
+@endunless
+{{-- 
+<div class="form-group mb-4">
+    <div class="flex items-center gap-2">
+        <input
+            type="checkbox"
+            id="is_loaned"
+            name="is_loaned"
+            value="1"
+            {{ $isLoaned ? 'checked' : '' }}
+            class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
+
+        <label for="is_loaned" class="text-sm font-medium text-slate-700">
+            ¿Este equipo es prestado?
+        </label>
+    </div>
+</div> --}}
+
+
+
+
+
 <div class="bg-white rounded-lg border border-slate-200 p-6 shadow-xs">
 
     <div class="flex items-center justify-between mb-5">
@@ -254,7 +352,7 @@
 </div>
 
  <!-- 3. GARANTÍA -->
-<div class="bg-white rounded-lg border border-slate-200 p-6 shadow-xs">
+{{-- <div class="bg-white rounded-lg border border-slate-200 p-6 shadow-xs">
     <h2 class="text-sm font-semibold text-slate-700 mb-5">Garantía</h2>
 
     <div class="grid grid-cols-2 gap-5">
@@ -311,7 +409,7 @@
             @error('purchase_order_pdf') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
         </div>
     </div>
-</div>
+</div> --}}
         <div class="bg-white rounded-lg border border-slate-200 p-6">
             <h2 class="text-sm font-semibold text-slate-700 mb-4">Imágenes del equipo</h2>
 
@@ -659,6 +757,22 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     }
+});
+document.addEventListener('DOMContentLoaded', function () {
+
+    const checkbox = document.getElementById('is_loaned');
+    const block = document.getElementById('loan_fields_block');
+
+    if (!checkbox || !block) return;
+
+    function toggleLoanBlock() {
+        block.style.display = checkbox.checked ? 'block' : 'none';
+    }
+
+    toggleLoanBlock();
+
+    checkbox.addEventListener('change', toggleLoanBlock);
+
 });
 </script>
      @endsection

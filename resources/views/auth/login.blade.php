@@ -10,7 +10,7 @@
 
     <div class="sm:mx-auto w-full max-w-md">
         <div class="text-center">
-            <span class="text-4xl select-none">💻</span>
+            <span class="text-4xl select-none"></span>
             <h2 class="mt-4 text-center text-2xl font-bold tracking-tight text-slate-900">
                 Inventario de Activos TI
             </h2>
